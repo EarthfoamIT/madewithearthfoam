@@ -1,0 +1,19 @@
+node_modules
+dist
+
+# Scraped mirror of the original site (75 MB, reference only; rebuild with tools/crawl.py)
+/site
+dist-ssr
+*.local
+.vite
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
