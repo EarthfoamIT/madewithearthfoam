@@ -343,6 +343,22 @@ main .header .header__sinhala {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
       column-gap: 10px; } }
+.header__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px; }
+  @media (min-width: 1024px) {
+    .header__actions {
+      grid-column: 7 / span 2; } }
+  /* Narrow desktops: two columns are too tight for both buttons, so they
+     take three and the tagline shifts left to make room. */
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .header__actions {
+      grid-column: 6 / span 3; }
+    .header__content .header__sinhala {
+      grid-column: 4 / span 2; } }
+
 .delayedHeader > .header {
   transition: transform 0.4s ease-in-out;
   transform: translateY(-100%); }
@@ -2276,3 +2292,39 @@ main .header .header__sinhala {
 
 .ellipsis {
   text-overflow: ellipsis; }
+
+/* --- Shared by the Track Order and Contact pages --- */
+
+/* Large page title; scales from 44px on phones to 84px on wide screens. */
+.pageTitle {
+  font-family: "GT America", sans-serif;
+  font-size: clamp(44px, 28px + 4vw, 84px);
+  line-height: 95%;
+  font-weight: 400;
+  letter-spacing: -0.04em; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap; }
+
+/* Load-in, matching earthfoam.lk's slide-up: 10px rise and fade over 1s,
+   staggered 100ms per data-delay step. Keyframes (not transitions) so
+   content that appears later, like search results, animates the same way. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  [data-animate="slide-up"] {
+    animation: slide-up 1s cubic-bezier(0.215, 0.61, 0.355, 1) both; }
+  [data-animate][data-delay="1"] { animation-delay: 100ms; }
+  [data-animate][data-delay="2"] { animation-delay: 200ms; }
+  [data-animate][data-delay="3"] { animation-delay: 300ms; }
+  [data-animate][data-delay="4"] { animation-delay: 400ms; }
+  [data-animate][data-delay="5"] { animation-delay: 500ms; }
+  [data-animate][data-delay="6"] { animation-delay: 600ms; }
+  [data-animate][data-delay="7"] { animation-delay: 700ms; } }
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; } }

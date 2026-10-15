@@ -1,9 +1,9 @@
 import foamBlock from '../assets/images/foam-block.webp'
 import team from '../assets/images/team.webp'
 import partnerLogos from '../assets/images/partner-logos.webp'
+import { Link } from 'react-router'
 import ProjectCard from '../components/ProjectCard.jsx'
 import { listedProjects } from './projects.js'
-import { CONTACT } from './site.js'
 
 // Gallery items:
 //   { type: 'image', src, width, height, alt, caption? }
@@ -146,7 +146,7 @@ export const homeSections = [
         <p>There are a few different ways to source foam from our Earthfoam Factory and we’re always happy to discuss custom projects.</p>
         <p>
           If you have questions or new ideas, please{' '}
-          <a href={`mailto:${CONTACT.email}`} rel="nofollow noreferrer noopener">contact us</a>.
+          <Link to="/contact">contact us</Link>.
         </p>
         <h3 id="wholesale-latex-foam">Wholesale Latex Foam</h3>
         <p>Our foam is available wholesale in a variety of sizes and densities (including hard rubber). We can also adjust our molds to fit your needs. Reach out to us to discuss quantities and customization options. Licensing is available to use the Made with Earthfoam seal on your finished products.</p>

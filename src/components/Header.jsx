@@ -1,6 +1,5 @@
 import { Link } from 'react-router'
 import monogram from '../assets/graphics/monogram.svg'
-import { CONTACT } from '../data/site.js'
 import Tagline from './Tagline.jsx'
 
 export default function Header({ style }) {
@@ -13,10 +12,13 @@ export default function Header({ style }) {
         <div className="header__sinhala lg:col-start-5 lg:col-span-2 overflow-h hidden lg:flex flex-col lg:flex-row justify-between relative noselect">
           <Tagline />
         </div>
-        <div className="lg:col-start-8 text-right">
-          <a className="button button--contact text-16 lg:text-18" href={`mailto:${CONTACT.email}`}>
+        <div className="header__actions">
+          <Link className="button button--contact text-16 lg:text-18" to="/track-order">
+            Track Order
+          </Link>
+          <Link className="button button--contact text-16 lg:text-18" to="/contact">
             Contact Us
-          </a>
+          </Link>
         </div>
       </div>
     </header>
