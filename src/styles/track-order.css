@@ -1,0 +1,203 @@
+/* Track your order page (/track-order). Uses the site palette from
+   global.css: black #141617, gray1 #202122, gray2 #313131, gray3 #5E5E5E,
+   gray7 #9C9A9B, sunset #E68276. Type comes from the global .pageTitle/
+   .h2/.h4/.eyebrow-sm/.text-14 classes, nudged up slightly below for small
+   text. The load-in animation ([data-animate]) also lives in global.css. */
+
+.trackOrder {
+  --to-accent: #E68276;
+  --to-muted: #9C9A9B;
+  --to-rule: #313131;
+  --to-faint: #202122; }
+
+.trackOrder__muted {
+  color: var(--to-muted); }
+
+/* Small text is a touch larger here than the global defaults. */
+.trackOrder .eyebrow-sm {
+  font-size: 11px; }
+
+.trackOrder .text-14 {
+  font-size: 15px;
+  line-height: 135%; }
+
+@media (min-width: 1024px) {
+  .trackOrder .eyebrow-sm {
+    font-size: 12px; }
+  .trackOrder .text-14 {
+    font-size: 16px; } }
+
+@media (min-width: 1024px) {
+  /* Clears the sticky header (about 116px tall) with room to spare. */
+  .trackOrder__intro {
+    position: sticky;
+    top: 180px;
+    align-self: start; } }
+
+/* Search: same field as the newsletter form */
+.trackOrder__form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 30px;
+  border: 1px solid var(--to-faint);
+  transition: border-color 0.3s; }
+  .trackOrder__form:focus-within {
+    border-color: #5E5E5E; }
+
+.trackOrder__input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0;
+  background: transparent;
+  color: #FFFFFF;
+  font: inherit;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border: none;
+  outline: none; }
+  .trackOrder__input::placeholder {
+    color: #5E5E5E;
+    text-transform: none;
+    letter-spacing: -0.04em; }
+
+.button.trackOrder__submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px; }
+  .trackOrder__submit:focus-visible {
+    outline: 2px solid var(--to-accent);
+    outline-offset: 2px; }
+  .trackOrder__submit[disabled] {
+    opacity: 0.5;
+    cursor: progress; }
+
+/* Before a search: the five stages */
+.trackOrder__stages li {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 16px;
+  padding: 18px 0;
+  border-top: 1px solid var(--to-rule); }
+  .trackOrder__stages li svg {
+    margin-top: 3px;
+    color: var(--to-accent); }
+
+/* Loading / not found / error */
+.trackOrder__notice {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--to-rule); }
+  .trackOrder__notice svg {
+    color: var(--to-accent); }
+
+.trackOrder__spin {
+  animation: trackOrder-spin 1s linear infinite; }
+
+@keyframes trackOrder-spin {
+  to { transform: rotate(360deg); } }
+
+/* Result */
+.trackOrder__shipments > * + * {
+  margin-top: 60px;
+  padding-top: 40px;
+  border-top: 1px solid #5E5E5E; }
+
+.trackOrder__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--to-accent); }
+
+.trackOrder__section {
+  padding: 24px 0;
+  border-top: 1px solid var(--to-rule); }
+
+/* Stage bar: five segments, filled up to the current one */
+.trackOrder__steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  margin: 32px 0; }
+
+.trackOrder__step {
+  padding-top: 10px;
+  border-top: 3px solid var(--to-rule);
+  color: #5E5E5E;
+  line-height: 120%; }
+
+.trackOrder__stepLabel {
+  display: block;
+  font-size: 12px;
+  letter-spacing: -0.02em; }
+  @media (min-width: 1024px) {
+    .trackOrder__stepLabel {
+      font-size: 15px; } }
+
+.trackOrder__step--done {
+  border-top-color: #FFFFFF;
+  color: var(--to-muted); }
+
+.trackOrder__step--current {
+  border-top-color: var(--to-accent);
+  color: #FFFFFF;
+  font-weight: 500; }
+
+/* Voyage line */
+.trackOrder__ports {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px; }
+
+.trackOrder__track {
+  position: relative;
+  height: 2px;
+  margin: 24px 0 16px;
+  background: var(--to-rule); }
+
+.trackOrder__trackFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--to-accent); }
+
+.trackOrder__trackShip {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  padding: 6px;
+  border-radius: 50%;
+  background: #141617;
+  border: 1px solid var(--to-accent);
+  color: var(--to-accent);
+  transform: translate(-50%, -50%); }
+
+/* Details */
+.trackOrder__details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px; }
+  @media (min-width: 1024px) {
+    .trackOrder__details {
+      grid-template-columns: repeat(3, 1fr); } }
+  .trackOrder__details dd {
+    overflow-wrap: anywhere; }
+
+/* Journey */
+.trackOrder__event {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--to-rule); }
+  .trackOrder__event time {
+    padding-top: 2px; }
+
+.trackOrder__event--expected > div > p:first-child {
+  color: var(--to-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .trackOrder__spin {
+    animation: none; } }

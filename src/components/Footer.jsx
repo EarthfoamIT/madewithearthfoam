@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import badge from '../assets/graphics/badge.svg'
 import { ADDRESS_LINES, CONTACT } from '../data/site.js'
 import Tagline from './Tagline.jsx'
@@ -29,6 +30,9 @@ export default function Footer() {
           </p>
           <p>
             <a className="underline" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+          </p>
+          <p className="mt-3">
+            <Link className="underline" to="/track-order">Track your order →</Link>
           </p>
         </div>
 

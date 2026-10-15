@@ -1,0 +1,47 @@
+/* Contact page (/contact). Layout follows the earthfoam.lk contact page;
+   colours and type come from this site (see global.css). */
+
+.contactPage__body {
+  display: flex;
+  flex-direction: column;
+  gap: 40px; }
+  @media (min-width: 1024px) {
+    .contactPage__body {
+      gap: 60px;
+      /* Lines the first line of text up with the top of the title. */
+      padding-top: 12px; } }
+
+.contactPage__lede {
+  max-width: 520px;
+  text-wrap: pretty; }
+
+.contactPage__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; }
+
+.button.contactPage__button {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 380px;
+  padding-top: 17px;
+  padding-bottom: 17px;
+  font-size: 16px; }
+
+/* Filled for the main action; hover matches the site's other buttons.
+   Selectors include .button because global.css loads after page styles. */
+.button.contactPage__button--primary {
+  border-color: #FFFFFF;
+  background-color: #FFFFFF;
+  color: #141617; }
+  .button.contactPage__button--primary:hover {
+    border-color: #E68276;
+    background-color: #E68276;
+    color: #FFFFFF; }
+
+.contactPage__details {
+  display: flex;
+  flex-direction: column;
+  gap: 30px; }
