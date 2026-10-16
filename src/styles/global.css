@@ -194,7 +194,7 @@ html, body {
 .eyebrow-sm {
   font-family: "GT America", sans-serif;
   letter-spacing: 0.1em;
-  font-size: 10px;
+  font-size: 13px;
   line-height: 110%;
   text-transform: uppercase;
   font-weight: 500; }
@@ -594,6 +594,16 @@ main .header .header__sinhala {
     animation-name: tagline-overlay;
     animation-duration: 10s;
     animation-iteration-count: infinite; }
+
+/* Sinhala half of the tagline (and its hidden sizing copy), styled after the
+   earthfoam.lk footer: regular weight, sized to sit level with the 10px
+   English eyebrow. Sinhala vowel signs reach well above and below the line,
+   so the line height is generous; the container clips anything outside it. */
+.tagline__sinhala {
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: 0; }
 
 .tagline--delay {
   animation-delay: calc(5s); }
