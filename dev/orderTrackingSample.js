@@ -34,6 +34,8 @@ const TRACKING_SQL = `
     b.vesselname,
     b.arrivalport,
     b.finaldes,
+    b.istracking,
+    b.trackingstate,
     DATE_FORMAT(b.loaddate, '%Y-%m-%d') loaddate,
     DATE_FORMAT(b.estloaddate, '%Y-%m-%d') estloaddate,
     DATE_FORMAT(b.etd, '%Y-%m-%d') etd,
@@ -49,8 +51,11 @@ const TRACKING_SQL = `
     v.port_of_discharge portOfDischarge,
     v.transit_percentage transitPercentage,
     v.last_synced_at lastSyncedAt,
+    v.latitude,
+    v.longitude,
     v.movements_json movementsJson,
-    v.route_ports_json routePortsJson
+    v.route_ports_json routePortsJson,
+    v.route_segments_json routeSegmentsJson
   FROM loadingdet b
   LEFT JOIN vessel_tracking_snapshot v
     ON v.companyId = b.companyId
@@ -94,6 +99,74 @@ function getProgress(stage, transitPercentage, start, end, today) {
 
   const ratio = (Date.parse(today) - startTime) / (endTime - startTime)
   return Math.max(5, Math.min(95, Math.round(ratio * 100)))
+}
+
+function toLatLon(coordinates) {
+  const [lon, lat] = Array.isArray(coordinates) ? coordinates.map(Number) : []
+  return Number.isFinite(lat) && Number.isFinite(lon) ? [lat, lon] : null
+}
+
+function buildMap(row, routePorts) {
+  if (row.istracking !== 'Y' || row.trackingstate === 'MISMATCH') return null
+
+  const segments = parseJson(row.routeSegmentsJson, [])
+  const segmentList = Array.isArray(segments) ? segments : []
+  const portList = Array.isArray(routePorts) ? routePorts : []
+
+  const liveSegment = segmentList.find((segment) => toLatLon(segment?.currentCoordinates))
+  const currentPort = portList.find((port) => `${port?.status || ''}`.toUpperCase() === 'CURRENT')
+  const position =
+    toLatLon(liveSegment?.currentCoordinates) ||
+    toLatLon([row.longitude, row.latitude]) ||
+    toLatLon(currentPort?.coordinates)
+
+  const lines = []
+  segmentList.forEach((segment) => {
+    const path = (Array.isArray(segment?.coordinates) ? segment.coordinates : []).map(toLatLon).filter(Boolean)
+    if (path.length < 2) return
+
+    const status = `${segment?.status || ''}`.toUpperCase()
+    const current = toLatLon(segment?.currentCoordinates)
+
+    if (status === 'CURRENT' && current) {
+      let nearest = 0
+      path.forEach(([lat, lon], i) => {
+        const [nLat, nLon] = path[nearest]
+        if ((lat - current[0]) ** 2 + (lon - current[1]) ** 2 < (nLat - current[0]) ** 2 + (nLon - current[1]) ** 2) {
+          nearest = i
+        }
+      })
+      lines.push({ sailed: true, path: [...path.slice(0, nearest + 1), current] })
+      lines.push({ sailed: false, path: [current, ...path.slice(nearest + 1)] })
+    } else {
+      lines.push({ sailed: status === 'PAST', path })
+    }
+  })
+
+  const ports = portList
+    .map((port) => ({
+      name: port?.name || null,
+      country: port?.countryName || null,
+      status: port?.status || null,
+      position: toLatLon(port?.coordinates),
+    }))
+    .filter((port) => port.position)
+
+  if (!position && !lines.length) return null
+
+  const reference = (lines[0]?.path[0] || ports[0]?.position || position)[1]
+  const fix = ([lat, lon]) => {
+    let next = lon
+    while (next < reference - 180) next += 360
+    while (next > reference + 180) next -= 360
+    return [Math.round(lat * 1e4) / 1e4, Math.round(next * 1e4) / 1e4]
+  }
+
+  return {
+    position: position ? fix(position) : null,
+    lines: lines.map((line) => ({ sailed: line.sailed, path: line.path.map(fix) })).filter((line) => line.path.length >= 2),
+    ports: ports.map((port) => ({ ...port, position: fix(port.position) })),
+  }
 }
 
 function toShipment(row) {
@@ -161,6 +234,7 @@ function toShipment(row) {
       vesselName: movement?.vesselName || null,
     })),
     updatedAt: row.lastSyncedAt || null,
+    map: buildMap(row, routePorts),
   }
 }
 

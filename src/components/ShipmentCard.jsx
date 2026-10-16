@@ -1,4 +1,5 @@
-import { Ship } from 'lucide-react'
+import { ChevronDown, MapPin, Ship } from 'lucide-react'
+import { Suspense, lazy, useId, useState } from 'react'
 import {
   STAGES,
   buildTimeline,
@@ -10,6 +11,9 @@ import {
   titleCase,
 } from '../lib/orderTracking.js'
 import { STAGE_ICONS } from '../lib/stageIcons.js'
+
+// Leaflet is only downloaded when someone opens the map.
+const ShipmentMap = lazy(() => import('./ShipmentMap.jsx'))
 
 function Status({ shipment }) {
   const { title, lines } = describeShipment(shipment)
@@ -125,7 +129,7 @@ function Journey({ shipment }) {
   if (!events.length) return null
 
   return (
-    <div className="trackOrder__section" data-animate="slide-up" data-delay="5">
+    <div className="trackOrder__section" data-animate="slide-up" data-delay="6">
       <h3 className="eyebrow-sm trackOrder__muted mb-2">Journey</h3>
       <ol className="trackOrder__journey">
         {events.map((event, i) => (
@@ -147,6 +151,45 @@ function Journey({ shipment }) {
   )
 }
 
+// Collapsed by default. The API only sends `map` for shipments the ERP is
+// tracking, so orders with tracking off never show this.
+function MapSection({ shipment }) {
+  const [open, setOpen] = useState(false)
+  const panelId = useId()
+  if (!shipment.map) return null
+
+  const updated = formatDate(shipment.updatedAt)
+
+  return (
+    <div className="trackOrder__section" data-animate="slide-up" data-delay="5">
+      <button
+        type="button"
+        className="trackOrder__mapToggle"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <span className="trackOrder__mapToggleLabel">
+          <MapPin size={18} strokeWidth={1.75} aria-hidden="true" />
+          {shipment.stage === 'sailing' ? 'See where it is now' : 'See its route on the map'}
+        </span>
+        <ChevronDown size={18} strokeWidth={1.75} className="trackOrder__mapChevron" aria-hidden="true" />
+      </button>
+
+      {open && (
+        <div id={panelId} className="mt-2">
+          <Suspense fallback={<div className="trackOrder__map trackOrder__map--loading">Loading map…</div>}>
+            <ShipmentMap map={shipment.map} vesselName={shipName(shipment.vesselName)} />
+          </Suspense>
+          {updated && (
+            <p className="text-14 trackOrder__muted mt-1">Position as last reported by the shipping line on {updated}.</p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function ShipmentCard({ shipment, heading }) {
   const updated = formatDate(shipment.updatedAt)
 
@@ -157,6 +200,7 @@ export default function ShipmentCard({ shipment, heading }) {
       <Steps stage={shipment.stage} />
       {shipment.stage !== 'preparing' && <Voyage shipment={shipment} />}
       <Details shipment={shipment} />
+      <MapSection shipment={shipment} />
       <Journey shipment={shipment} />
       {updated && <p className="text-14 trackOrder__muted mt-3">Tracking last updated {updated}</p>}
     </article>
