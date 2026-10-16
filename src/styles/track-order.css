@@ -185,6 +185,126 @@
   .trackOrder__details dd {
     overflow-wrap: anywhere; }
 
+/* Map (expandable) */
+.trackOrder__mapToggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 4px 0;
+  color: #FFFFFF;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s; }
+  .trackOrder__mapToggle:hover {
+    color: var(--to-accent); }
+  .trackOrder__mapToggle:focus-visible {
+    outline: 2px solid var(--to-accent);
+    outline-offset: 4px; }
+
+.trackOrder__mapToggleLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px; }
+  .trackOrder__mapToggleLabel svg {
+    color: var(--to-accent); }
+
+.trackOrder__mapChevron {
+  transition: transform 0.3s; }
+  [aria-expanded="true"] > .trackOrder__mapChevron {
+    transform: rotate(180deg); }
+
+.trackOrder__map {
+  height: 320px;
+  border-radius: 16px;
+  border: 1px solid var(--to-rule);
+  overflow: hidden;
+  background: #262626;
+  z-index: 0; }
+  @media (min-width: 1024px) {
+    .trackOrder__map {
+      height: 400px; } }
+
+.trackOrder__map--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--to-muted); }
+
+/* Wraps the map so the zoom hint can sit on top of it. */
+.trackOrder__mapFrame {
+  position: relative; }
+
+.trackOrder__mapHint {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border-radius: 16px;
+  background: rgba(20, 22, 23, 0.6);
+  color: #FFFFFF;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s; }
+  .trackOrder__mapHint.is-visible {
+    opacity: 1; }
+
+/* Leaflet controls in the site's dark style. Selectors start with
+   .trackOrder__map.leaflet-container because leaflet.css loads later. */
+.trackOrder__map.leaflet-container {
+  font-family: inherit;
+  font-size: 13px; }
+
+.trackOrder__map.leaflet-container .leaflet-control-zoom {
+  border: 1px solid var(--to-rule);
+  border-radius: 10px;
+  overflow: hidden; }
+  .trackOrder__map.leaflet-container .leaflet-control-zoom a {
+    background: #141617;
+    color: #FFFFFF;
+    border-color: var(--to-rule); }
+  .trackOrder__map.leaflet-container .leaflet-control-zoom a:hover {
+    background: #202122; }
+
+/* Map credits are required by the tile providers, so they stay, just small. */
+.trackOrder__map.leaflet-container .leaflet-control-attribution {
+  padding: 0 5px;
+  border-top-left-radius: 6px;
+  background: rgba(20, 22, 23, 0.55);
+  color: #5E5E5E;
+  font-size: 8px;
+  line-height: 1.5;
+  letter-spacing: 0; }
+  .trackOrder__map.leaflet-container .leaflet-control-attribution a {
+    color: inherit; }
+  .trackOrder__map.leaflet-container .leaflet-control-attribution svg {
+    width: 8px;
+    height: 6px; }
+
+.trackOrder__map.leaflet-container .leaflet-tooltip {
+  background: #141617;
+  color: #FFFFFF;
+  border: 1px solid var(--to-rule);
+  box-shadow: none; }
+  .trackOrder__map.leaflet-container .leaflet-tooltip-top::before {
+    border-top-color: #141617; }
+
+/* .leaflet-marker-icon is included so this beats leaflet.css's display: block,
+   which otherwise un-centres the ship in its circle. */
+.leaflet-marker-icon.trackOrder__mapShip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #141617;
+  border: 2px solid var(--to-accent);
+  color: var(--to-accent);
+  box-shadow: 0 0 0 6px rgba(230, 130, 118, 0.2); }
+
 /* Journey */
 .trackOrder__event {
   display: grid;

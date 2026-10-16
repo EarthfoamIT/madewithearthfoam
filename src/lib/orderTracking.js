@@ -101,6 +101,14 @@ function daysPhrase(days) {
   return days === 1 ? '1 day' : `${days} days`
 }
 
+// ShipsGo reports a port name, or "At sea - COLOMBO to NEW YORK" between ports.
+function whereNow(location) {
+  if (!location) return ''
+  const between = `${location}`.match(/^at sea\s*-\s*(.+?)\s+to\s+(.+)$/i)
+  if (between) return ` Currently at sea between ${titleCase(between[1])} and ${titleCase(between[2])}.`
+  return ` Last seen near ${titleCase(location)}.`
+}
+
 // Headline and supporting lines for the status block. Kept conversational:
 // how far along the order is, and what happens next.
 export function describeShipment(shipment) {
@@ -156,9 +164,9 @@ export function describeShipment(shipment) {
       return {
         title: 'Your order is at sea.',
         lines: [
-          `${day && day > 0 ? `Day ${day} of its journey to ${destination}.` : `On its way to ${destination}.`}${
-            shipment.currentLocation ? ` Last seen near ${titleCase(shipment.currentLocation)}.` : ''
-          }`,
+          `${day && day > 0 ? `Day ${day} of its journey to ${destination}.` : `On its way to ${destination}.`}${whereNow(
+            shipment.currentLocation,
+          )}`,
           toGo === null
             ? 'We’ll share an arrival date as soon as the shipping line confirms it.'
             : toGo > 0
