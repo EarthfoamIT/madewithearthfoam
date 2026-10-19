@@ -60,7 +60,15 @@ export default function Hero({ onVisibilityChange }) {
         </a>
       </div>
 
-      <video ref={backgroundRef} muted playsInline autoPlay loop className="hero__background w-full h-full fit-cover">
+      <video
+        ref={backgroundRef}
+        muted
+        playsInline
+        autoPlay
+        loop
+        poster={HERO_VIDEOS.background.poster}
+        className="hero__background w-full h-full fit-cover"
+      >
         <source src={HERO_VIDEOS.background.large} type="video/mp4" media="(min-width: 1440px)" />
         <source src={HERO_VIDEOS.background.small} type="video/mp4" />
       </video>
