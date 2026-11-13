@@ -5,6 +5,19 @@ const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 
 export const ORDER_NUMBER_EXAMPLE = 'ABC/012/26'
 
+// Same rules as the API (api/src/ordertracking/ordertracking.service.ts), so
+// malformed input is rejected here without a request.
+const ORDER_NUMBER_PATTERN = /^[A-Z0-9][A-Z0-9/-]{2,49}$/
+export const ORDER_NUMBER_MAX_LENGTH = 50
+
+export function normalizeOrderNumber(value) {
+  return `${value || ''}`.trim().toUpperCase().replace(/\s+/g, '')
+}
+
+export function isValidOrderNumber(value) {
+  return ORDER_NUMBER_PATTERN.test(value)
+}
+
 export class TrackingError extends Error {
   constructor(kind, message) {
     super(message)
@@ -13,18 +26,32 @@ export class TrackingError extends Error {
 }
 
 export async function fetchOrderTracking(orderNumber, { signal } = {}) {
+  if (!isValidOrderNumber(orderNumber)) {
+    throw new TrackingError('invalid', 'Please enter a valid order number.')
+  }
+
   let res
   try {
-    res = await fetch(`${API_URL}/ordertracking?ordernum=${encodeURIComponent(orderNumber)}`, { signal })
+    res = await fetch(`${API_URL}/ordertracking?ordernum=${encodeURIComponent(orderNumber)}`, {
+      signal,
+      // Public endpoint: never send cookies, never cache (order data changes),
+      // and don't tell the API which page asked.
+      credentials: 'omit',
+      cache: 'no-store',
+      referrerPolicy: 'no-referrer',
+    })
   } catch (err) {
     if (err.name === 'AbortError') throw err
     throw new TrackingError('network', 'We couldn’t reach our tracking service. Please try again in a moment.')
   }
 
   const body = await res.json().catch(() => null)
-  if (res.ok && body) return body
+  if (res.ok && body && Array.isArray(body.shipments)) return body
   if (res.status === 404) throw new TrackingError('not-found', body?.message)
-  if (res.status === 400) throw new TrackingError('invalid', body?.message)
+  if (res.status === 400) throw new TrackingError('invalid', 'Please enter a valid order number.')
+  if (res.status === 429) {
+    throw new TrackingError('rate-limited', 'You’ve looked up a lot of orders in a short time. Please wait a few minutes and try again.')
+  }
   throw new TrackingError('server', 'Something went wrong on our side. Please try again shortly.')
 }
 
