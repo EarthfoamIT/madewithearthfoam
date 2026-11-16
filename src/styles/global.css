@@ -406,6 +406,11 @@ main .header .header__logo {
 .hero .header {
   z-index: 50; }
 
+/* NOTE: always write -webkit-backdrop-filter BEFORE backdrop-filter, in every
+   file. With the unprefixed one first, the production CSS minifier drops it
+   and only Safari gets the blur (Chrome, Edge and Firefox show none). The dev
+   server doesn't minify, so this only shows up on the deployed site. */
+
 /* Frosted pill over the hero video. The tint does most of the work, so the
    pill stays readable even when the browser skips the blur (Chrome often
    doesn't blur a GPU-decoded <video> behind it). translateZ gives the pill
@@ -415,8 +420,8 @@ main .header .header__logo {
   color: #FFFFFF;
   background: rgba(20, 22, 23, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
   transform: translateZ(0);
   transition: background-color 0.3s, border-color 0.3s; }
   .hero__notification:hover {
@@ -523,8 +528,8 @@ main .header .header__logo {
 .contentLayout__gallery figure figcaption {
   background-color: rgba(32, 33, 34, 0.2);
   padding: 5px 15px;
-  backdrop-filter: blur(50px);
-  -webkit-backdrop-filter: blur(50px); }
+  -webkit-backdrop-filter: blur(50px);
+  backdrop-filter: blur(50px); }
 
 .contentLayout__gallery > *:first-child {
   margin-top: 0 !important; }

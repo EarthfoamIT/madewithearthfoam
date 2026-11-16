@@ -399,8 +399,8 @@
   height: 40px;
   border-radius: 50%;
   background: rgba(20, 22, 23, 0.55);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px); }
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px); }
 
 .mediaCard__body .h4 {
   margin-bottom: 4px; }
@@ -444,8 +444,8 @@
   border-radius: 50%;
   color: #FFFFFF;
   background: rgba(20, 22, 23, 0.55);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   transition: background-color 0.3s; }
   .mediaViewer__close:hover {
     background: #E68276; }
