@@ -65,12 +65,15 @@ function formatDate(item) {
   return `${start.getDate()}–${end.toLocaleDateString('en-GB', full)}`
 }
 
-const isUpcoming = (item, today) => (item.endDate || item.date) >= today
+// Only things that happen on a date (events, exhibitions) can be upcoming.
+// Videos, press, articles etc. are dated by release, so they never are.
+const SCHEDULED = new Set(['events', 'exhibitions'])
+const isUpcoming = (item, today) => SCHEDULED.has(item.category) && (item.endDate || item.date) >= today
 
 // --- What an entry does when opened ---
 
 function actionFor(item) {
-  if (item.video) return { label: 'Watch', icon: Play }
+  if (item.video || item.youtube) return { label: 'Watch', icon: Play }
   if (item.file) return { label: 'Open PDF', icon: Download, href: item.file }
   if (item.href) return { label: 'Read', icon: ArrowUpRight, href: item.href }
   if (item.image) return { label: 'View', icon: ImageIcon }
@@ -135,7 +138,7 @@ function GridCard({ item, onView, today }) {
     <li className="mediaCard mediaEntry">
       <div className="mediaCard__thumb">
         {item.image ? <img src={item.image} alt="" loading="lazy" /> : null}
-        {item.video && (
+        {(item.video || item.youtube) && (
           <span className="mediaCard__play" aria-hidden="true">
             <Play size={18} strokeWidth={1.75} />
           </span>

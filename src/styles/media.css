@@ -449,3 +449,16 @@
   transition: background-color 0.3s; }
   .mediaViewer__close:hover {
     background: #E68276; }
+
+/* YouTube in the viewer: fixed 16:9 box, as wide as the screen allows. */
+.mediaViewer__media--youtube {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-height: 78vh;
+  overflow: hidden; }
+  .mediaViewer__media--youtube iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0; }

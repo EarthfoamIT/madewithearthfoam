@@ -2,6 +2,8 @@ import foamBlock from '../assets/images/foam-block.webp'
 import team from '../assets/images/team.webp'
 import partnerLogos from '../assets/images/partner-logos.webp'
 import { Link } from 'react-router'
+import YouTubeEmbed from '../components/YouTubeEmbed.jsx'
+import { VIDEOS } from './videos.js'
 import ProjectCard from '../components/ProjectCard.jsx'
 import { listedProjects } from './projects.js'
 
@@ -81,6 +83,8 @@ export const homeSections = [
     bordered: true,
     gallery: [{ type: 'certificates' }],
     body: (
+      <>
+      <YouTubeEmbed {...VIDEOS.certifiedQuality} caption={VIDEOS.certifiedQuality.title} className="mb-5 lg:mb-8" />
       <div className="richtext">
         <h3 id="sustainable">Sustainable</h3>
         <p>By working with a natural material, farming organically, focusing on biodiversity, and prioritizing the well-being of our workers, Earthfoam is a sustainable product for people and the planet.</p>
@@ -95,6 +99,7 @@ export const homeSections = [
         <h3 id="consistent">Consistent</h3>
         <p>Natural latex has natural variations depending on growing conditions, weather, etc. But because our team has so much experience, we’re able to fine-tune our production process to adapt to these variations and ensure consistency in every batch of Earthfoam.</p>
       </div>
+      </>
     ),
   },
   {

@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
 import { useImperativeHandle, useRef, useState } from 'react'
+import { youtubeEmbedUrl } from '../data/videos.js'
 
 // Full-screen <dialog> for the Gallery: plays an entry's video or shows
 // its image (press clippings, award photos) full size. Exposes open(item).
@@ -36,7 +37,18 @@ export default function MediaViewer({ ref, formatDate }) {
           <button onClick={close} className="mediaViewer__close cursor-pointer" aria-label="Close">
             <X size={22} strokeWidth={1.5} aria-hidden="true" />
           </button>
-          {item.video ? (
+          {item.youtube ? (
+            <div className="mediaViewer__media mediaViewer__media--youtube">
+              <iframe
+                key={item.id}
+                src={youtubeEmbedUrl(item.youtube)}
+                title={item.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+          ) : item.video ? (
             <video
               ref={videoRef}
               key={item.id}

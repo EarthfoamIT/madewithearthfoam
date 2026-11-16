@@ -6,6 +6,7 @@ import healthcareMedicalCamp from '../assets/images/healthcare-medical-camp.webp
 import halfHeightPillow01 from '../assets/images/half-height-pillow-01.webp'
 import team from '../assets/images/team.webp'
 import { HERO_VIDEOS } from './site.js'
+import { VIDEOS, youtubeThumbnail } from './videos.js'
 
 // Gallery (/gallery).
 //
@@ -24,7 +25,8 @@ import { HERO_VIDEOS } from './site.js'
 //   summary   optional, one or two sentences
 //   image     optional thumbnail; also what the viewer shows if nothing else
 //   Then at most one of these, which decides the card's action:
-//   video     { src, poster? }  plays in the viewer
+//   youtube   YouTube video ID  plays in the viewer (see src/data/videos.js)
+//   video     { src, poster? }  self-hosted file, plays in the viewer
 //   file      PDF url (brochures)  opens in a new tab
 //   href      external url (articles)  opens in a new tab
 //   (none)    the image opens in the viewer (press clippings, award photos)
@@ -40,6 +42,16 @@ export const MEDIA_CATEGORIES = [
 ]
 
 export const mediaItems = [
+  // Real entries, from src/data/videos.js.
+  ...Object.entries(VIDEOS).map(([key, v]) => ({
+    id: key,
+    category: 'videos',
+    title: v.title,
+    date: v.date,
+    summary: v.summary,
+    image: youtubeThumbnail(v.youtubeId),
+    youtube: v.youtubeId,
+  })),
   {
     id: 'sample-trade-fair-2027',
     category: 'exhibitions',
