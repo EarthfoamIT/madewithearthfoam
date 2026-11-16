@@ -98,18 +98,20 @@ export const homeSections = [
     ),
   },
   {
+    // id kept from the old "Fair Trade Projects" title so existing links still work.
     id: 'fair-trade-projects',
-    title: 'Fair Trade Projects',
-    subhead: 'Uplifting the local community in Sri Lanka',
+    title: 'Organic & Fair Trade Program',
+    subhead: 'Uplifting farmers, workers, and the local community in Sri Lanka',
     bordered: true,
     gallery: [],
     body: (
       <>
         <div className="richtext">
-          <p>As a Fair for Life certified company, we pay into a Development Fund for our factory workers, farmers, and tappers in Sri Lanka. They decide how to spend it.</p>
+          <p>Our latex comes from a network of 323 small, GOLS certified organic farms, and we pay our farmers a premium for the extra care organic crops take.</p>
+          <p>As a Fair for Life certified company, we also pay into a Development Fund for our factory workers, farmers, and tappers in Sri Lanka. They decide how to spend it.</p>
           <p>As owners of our Sri Lankan factory and the architects of our fair trade network, we’ve always been active members of our local communities. Our team in Sri Lanka lives, works, votes, and sends their kids to school mere miles away from where our foam is made.</p>
           <p>Environmental sustainability may be one of our top priorities, but caring for our planet would mean next to nothing if we didn’t care for our people.</p>
-          <p>Here are some of the projects made possible by the fund.</p>
+          <p>Here are some of the projects made possible by the fund. <Link to="/fair-for-life">See all our Fair for Life work</Link>.</p>
         </div>
         {listedProjects.map((project) => (
           <ProjectCard key={project.slug} project={project} />

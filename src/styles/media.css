@@ -1,0 +1,451 @@
+/* Gallery (/gallery). Site palette from global.css: black #141617,
+   gray1 #202122, gray2 #313131, gray3 #5E5E5E, gray7 #9C9A9B,
+   gray8 #BAB8B8, sunset #E68276. Type comes from the global classes. */
+
+.mediaPage__lede {
+  max-width: 560px;
+  text-wrap: pretty; }
+  @media (min-width: 1024px) {
+    .mediaPage__lede {
+      /* Lines the first line of text up with the title. */
+      padding-top: 30px; } }
+
+/* --- Entries share one click target: the title's ::after covers the card --- */
+
+.mediaEntry {
+  position: relative; }
+
+.mediaEntry__link {
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: color 0.3s; }
+  .mediaEntry__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1; }
+  .mediaEntry__link:focus-visible {
+    outline: none; }
+  .mediaEntry:has(.mediaEntry__link:focus-visible) {
+    outline: 2px solid #E68276;
+    outline-offset: 4px; }
+
+.mediaEntry:hover .mediaEntry__link {
+  color: #E68276; }
+
+.mediaEntry__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 11px; }
+
+.mediaEntry__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #9C9A9B; }
+
+.mediaEntry__tag--soon {
+  color: #E68276; }
+
+.mediaEntry__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  color: #BAB8B8;
+  transition: color 0.3s; }
+
+.mediaEntry:hover .mediaEntry__action {
+  color: #E68276; }
+
+/* --- Coming up --- */
+
+.mediaUpcoming__list {
+  display: grid;
+  gap: 10px; }
+  @media (min-width: 768px) {
+    .mediaUpcoming__list {
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); } }
+
+.mediaUpcoming__item {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 20px;
+  border: 1px solid #313131;
+  border-radius: 16px;
+  transition: border-color 0.3s; }
+  .mediaUpcoming__item:hover {
+    border-color: #E68276; }
+
+.mediaUpcoming__date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 64px;
+  height: 72px;
+  border-radius: 12px;
+  background: #202122;
+  color: #E68276; }
+  .mediaUpcoming__date .mediaRow__day {
+    color: #FFFFFF; }
+
+/* --- Toolbar: type filters and view toggle --- */
+
+.mediaToolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid #202122; }
+  @media (min-width: 1024px) {
+    .mediaToolbar {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px; } }
+
+/* Chips wrap on desktop and scroll sideways on phones. */
+.mediaFilters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -15px;
+  padding: 0 15px; }
+  .mediaFilters::-webkit-scrollbar {
+    display: none; }
+  @media (min-width: 1024px) {
+    .mediaFilters {
+      flex-wrap: wrap;
+      overflow: visible;
+      margin: 0;
+      padding: 0; } }
+
+.mediaChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  padding: 8px 16px;
+  border: 1px solid #313131;
+  border-radius: 1000px;
+  color: #BAB8B8;
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.3s, background-color 0.3s, color 0.3s; }
+  .mediaChip:hover {
+    border-color: #9C9A9B;
+    color: #FFFFFF; }
+  .mediaChip[aria-pressed="true"] {
+    border-color: #FFFFFF;
+    background: #FFFFFF;
+    color: #141617; }
+
+.mediaChip__count {
+  font-size: 12px;
+  opacity: 0.6; }
+
+/* Calendar / Grid switch: two equal halves with a thumb that slides
+   under the active one. */
+.mediaViewToggle {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  align-self: flex-start;
+  flex: none;
+  padding: 4px;
+  border-radius: 1000px;
+  background: #202122; }
+  @media (min-width: 1024px) {
+    .mediaViewToggle {
+      align-self: auto; } }
+  .mediaViewToggle button {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border-radius: 1000px;
+    color: #9C9A9B;
+    font: inherit;
+    font-size: 15px;
+    cursor: pointer;
+    transition: color 0.3s; }
+    .mediaViewToggle button:hover {
+      color: #FFFFFF; }
+    .mediaViewToggle button[aria-pressed="true"] {
+      color: #FFFFFF; }
+
+.mediaViewToggle__thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border-radius: 1000px;
+  background: #313131;
+  transition: transform 0.2s cubic-bezier(0.65, 0, 0.35, 1); }
+
+.mediaViewToggle[data-view="grid"] .mediaViewToggle__thumb {
+  transform: translateX(100%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .mediaViewToggle__thumb {
+    transition: none; } }
+
+/* --- Calendar view: year and months on the left, timeline on the right --- */
+
+.mediaCalendar {
+  display: grid;
+  gap: 40px; }
+  @media (min-width: 1024px) {
+    .mediaCalendar {
+      grid-template-columns: minmax(260px, 2fr) 6fr;
+      gap: 60px; } }
+
+@media (min-width: 1024px) {
+  /* Clears the sticky header (about 116px tall). */
+  .mediaCalendar__nav {
+    position: sticky;
+    top: 150px;
+    align-self: start; } }
+
+.mediaCalendar__year {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px; }
+
+.mediaIconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #313131;
+  border-radius: 50%;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: border-color 0.3s, background-color 0.3s; }
+  .mediaIconButton:hover:not(:disabled) {
+    border-color: #E68276;
+    background: #E68276; }
+  .mediaIconButton:disabled {
+    opacity: 0.3;
+    cursor: default; }
+
+.mediaMonths {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px; }
+  @media (min-width: 1024px) {
+    .mediaMonths {
+      grid-template-columns: repeat(3, 1fr); } }
+
+.mediaMonth {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 56px;
+  border-radius: 10px;
+  background: #202122;
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s; }
+  @media (min-width: 1024px) {
+    .mediaMonth {
+      height: 64px;
+      font-size: 15px; } }
+  .mediaMonth:hover:not(:disabled) {
+    background: #313131; }
+  .mediaMonth:disabled {
+    background: transparent;
+    border: 1px solid #202122;
+    color: #5E5E5E;
+    cursor: default; }
+  .mediaMonth[aria-pressed="true"] {
+    background: #E68276;
+    color: #FFFFFF; }
+
+.mediaMonth__dots {
+  display: flex;
+  gap: 3px;
+  height: 5px; }
+  .mediaMonth__dots i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #E68276; }
+
+.mediaMonth[aria-pressed="true"] .mediaMonth__dots i {
+  background: #FFFFFF; }
+
+.mediaClear {
+  color: #BAB8B8;
+  text-decoration: underline;
+  cursor: pointer; }
+  .mediaClear:hover {
+    color: #FFFFFF; }
+
+/* Timeline */
+
+.mediaTimeline__group:not(:last-child) {
+  margin-bottom: 40px; }
+
+.mediaTimeline__month {
+  padding-bottom: 12px;
+  border-bottom: 1px solid #202122; }
+
+.mediaRow {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 16px;
+  padding: 24px 0;
+  border-bottom: 1px solid #202122; }
+  @media (min-width: 768px) {
+    .mediaRow {
+      grid-template-columns: 72px 1fr 200px;
+      gap: 30px; } }
+
+.mediaRow__date {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; }
+
+.mediaRow__day {
+  font-family: "GT America", sans-serif;
+  font-size: 32px;
+  line-height: 90%;
+  letter-spacing: -0.04em; }
+  @media (min-width: 1024px) {
+    .mediaRow__day {
+      font-size: 44px; } }
+
+.mediaUpcoming__date .mediaRow__day {
+  font-size: 28px; }
+
+.mediaRow__body .h3 {
+  margin-bottom: 6px; }
+
+.mediaRow__summary {
+  margin-top: 10px;
+  max-width: 560px;
+  text-wrap: pretty; }
+
+.mediaRow__thumb {
+  display: none; }
+  @media (min-width: 768px) {
+    .mediaRow__thumb {
+      display: block;
+      aspect-ratio: 4 / 3;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #202122; } }
+  .mediaRow__thumb img, .mediaCard__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.215, 0.61, 0.355, 1); }
+
+.mediaEntry:hover .mediaRow__thumb img, .mediaEntry:hover .mediaCard__thumb img {
+  transform: scale(1.04); }
+
+/* --- Grid view --- */
+
+.mediaGrid {
+  display: grid;
+  gap: 30px 10px; }
+  @media (min-width: 640px) {
+    .mediaGrid {
+      grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) {
+    .mediaGrid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 40px 10px; } }
+
+.mediaCard__thumb {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #202122; }
+
+.mediaCard__play {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(20, 22, 23, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px); }
+
+.mediaCard__body .h4 {
+  margin-bottom: 4px; }
+
+/* --- Viewer dialog --- */
+
+.mediaViewer {
+  width: min(92vw, 1100px);
+  max-height: 92vh;
+  margin: auto; }
+
+.mediaViewer::backdrop {
+  background: rgba(20, 22, 23, 0.92); }
+
+.mediaViewer__figure {
+  position: relative;
+  display: flex;
+  flex-direction: column; }
+
+.mediaViewer__media {
+  display: block;
+  width: 100%;
+  max-height: 78vh;
+  object-fit: contain;
+  border-radius: 16px;
+  background: #000000; }
+
+.mediaViewer__caption {
+  padding: 16px 4px 4px; }
+
+.mediaViewer__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #FFFFFF;
+  background: rgba(20, 22, 23, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: background-color 0.3s; }
+  .mediaViewer__close:hover {
+    background: #E68276; }

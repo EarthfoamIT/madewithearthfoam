@@ -1,8 +1,17 @@
+import { Images, Mail, Truck } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { Link } from 'react-router'
 import { HERO_VIDEOS, SITE_DESCRIPTION } from '../data/site.js'
 import { ArrowRightIcon } from './icons.jsx'
 import Header from './Header.jsx'
 import VideoModal from './VideoModal.jsx'
+
+// Frosted shortcuts stacked in the hero's bottom-left corner.
+const QUICK_LINKS = [
+  { label: 'Track your order', to: '/track-order', icon: Truck },
+  { label: 'Gallery', to: '/gallery', icon: Images },
+  { label: 'Stay up to date with our newsletter', to: '#newsletter', icon: Mail },
+]
 
 // `onVisibilityChange(isVisible)` tells the layout whether the hero is on
 // screen, so the fixed header can stay hidden until the hero scrolls away.
@@ -37,7 +46,7 @@ export default function Hero({ onVisibilityChange }) {
     <section ref={heroRef} className="hero relative ml-a mr-a">
       {/* Transparent copy of the header that sits over the video
           (styled by `main .header` in global.css). */}
-      <Header />
+      <Header hero />
 
       <div
         className="flex flex-col items-center justify-center gap-4 lg:gap-5 text-center absolute t0 l0 r0 b0 p-2 lg:p-4"
@@ -53,12 +62,31 @@ export default function Hero({ onVisibilityChange }) {
         </div>
       </div>
 
-      <div className="hero__notifications absolute b0 l0 flex items-start flex-col gap-1 p-1 lg:p-2" style={{ zIndex: 11 }}>
-        <a href="#newsletter" className="hero__notification rounded inline-flex items-center gap-2 cursor-pointer text-14 lg:text-16">
-          <span>Stay up to date with our newsletter</span>
-          <ArrowRightIcon />
-        </a>
-      </div>
+      <nav
+        aria-label="Quick links"
+        className="hero__notifications absolute b0 l0 flex items-start flex-col gap-1 p-1 lg:p-2"
+        style={{ zIndex: 11 }}
+      >
+        {QUICK_LINKS.map(({ label, to, icon: Icon }) => {
+          const content = (
+            <>
+              <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
+              <span>{label}</span>
+              <ArrowRightIcon />
+            </>
+          )
+          const className = 'hero__notification rounded inline-flex items-center gap-2 cursor-pointer text-14 lg:text-16'
+          return to.startsWith('#') ? (
+            <a key={to} href={to} className={className}>
+              {content}
+            </a>
+          ) : (
+            <Link key={to} to={to} className={className}>
+              {content}
+            </Link>
+          )
+        })}
+      </nav>
 
       <video
         ref={backgroundRef}
