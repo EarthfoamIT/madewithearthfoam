@@ -422,7 +422,11 @@ main .header .fairForLifeIcon img {
       width: 88px; } }
 .hero {
   width: 100%;
+  /* svh = viewport with the mobile browser bars showing, so the bottom-left
+     quick links are on screen at load. vh stays as the fallback for older
+     browsers (on mobile it measures with the bars hidden). */
   height: 100vh;
+  height: 100svh;
   max-width: 1920px;
   max-height: 1080px;
   min-height: 450px; }
