@@ -24,7 +24,11 @@ export default function RootLayout() {
       <Carousel />
       <Newsletter />
       <Footer />
-      <ScrollRestoration />
+      {/* Every page loaded straight from the address bar gets the key
+          "default", so without this a typed URL (often the 404) would jump
+          to wherever the previously loaded page was scrolled. Keying those
+          by path keeps reloads restoring and new pages starting at the top. */}
+      <ScrollRestoration getKey={(location) => (location.key === 'default' ? location.pathname : location.key)} />
     </div>
   )
 }
