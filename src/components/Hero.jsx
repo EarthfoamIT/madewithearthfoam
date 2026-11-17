@@ -1,4 +1,4 @@
-import { Images, Mail, Truck } from 'lucide-react'
+import { Images, Truck } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router'
 import { HERO_VIDEOS, SITE_DESCRIPTION } from '../data/site.js'
@@ -9,8 +9,7 @@ import VideoModal from './VideoModal.jsx'
 // Frosted shortcuts stacked in the hero's bottom-left corner.
 const QUICK_LINKS = [
   { label: 'Track your order', to: '/track-order', icon: Truck },
-  { label: 'Gallery', to: '/gallery', icon: Images },
-  { label: 'Stay up to date with our newsletter', to: '#newsletter', icon: Mail },
+  { label: 'Media Gallery', to: '/gallery', icon: Images },
 ]
 
 // `onVisibilityChange(isVisible)` tells the layout whether the hero is on
@@ -67,25 +66,17 @@ export default function Hero({ onVisibilityChange }) {
         className="hero__notifications absolute b0 l0 flex items-start flex-col gap-1 p-1 lg:p-2"
         style={{ zIndex: 11 }}
       >
-        {QUICK_LINKS.map(({ label, to, icon: Icon }) => {
-          const content = (
-            <>
-              <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
-              <span>{label}</span>
-              <ArrowRightIcon />
-            </>
-          )
-          const className = 'hero__notification rounded inline-flex items-center gap-2 cursor-pointer text-14 lg:text-16'
-          return to.startsWith('#') ? (
-            <a key={to} href={to} className={className}>
-              {content}
-            </a>
-          ) : (
-            <Link key={to} to={to} className={className}>
-              {content}
-            </Link>
-          )
-        })}
+        {QUICK_LINKS.map(({ label, to, icon: Icon }) => (
+          <Link
+            key={to}
+            to={to}
+            className="hero__notification rounded inline-flex items-center gap-2 cursor-pointer text-14 lg:text-16"
+          >
+            <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
+            <span>{label}</span>
+            <ArrowRightIcon />
+          </Link>
+        ))}
       </nav>
 
       <video

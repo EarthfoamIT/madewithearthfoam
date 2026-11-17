@@ -144,7 +144,7 @@ export default function FairForLifePage() {
               Contact us
             </Link>
             <Link to="/gallery" className="button">
-              Gallery
+              Media Gallery
             </Link>
           </div>
         </div>

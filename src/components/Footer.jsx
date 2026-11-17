@@ -38,7 +38,7 @@ export default function Footer() {
             <Link className="underline" to="/track-order">Track your order →</Link>
           </p>
           <p>
-            <Link className="underline" to="/gallery">Gallery →</Link>
+            <Link className="underline" to="/gallery">Media Gallery →</Link>
           </p>
           <p>
             <Link className="underline" to="/fair-for-life">Fair for Life →</Link>

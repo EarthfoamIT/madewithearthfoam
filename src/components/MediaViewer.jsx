@@ -1,15 +1,20 @@
 import { X } from 'lucide-react'
 import { useImperativeHandle, useRef, useState } from 'react'
 import { youtubeEmbedUrl } from '../data/videos.js'
+import useYouTubeEnded from '../hooks/useYouTubeEnded.js'
 
 // Full-screen <dialog> for the Gallery: plays an entry's video or shows
 // its image (press clippings, award photos) full size. Exposes open(item).
 export default function MediaViewer({ ref, formatDate }) {
   const dialogRef = useRef(null)
   const videoRef = useRef(null)
+  const iframeRef = useRef(null)
   const [item, setItem] = useState(null)
 
   const close = () => dialogRef.current?.close()
+
+  // Close when a YouTube video ends, before YouTube's end-screen grid shows.
+  useYouTubeEnded(iframeRef, close, Boolean(item?.youtube))
 
   useImperativeHandle(ref, () => ({
     open(next) {
@@ -40,6 +45,7 @@ export default function MediaViewer({ ref, formatDate }) {
           {item.youtube ? (
             <div className="mediaViewer__media mediaViewer__media--youtube">
               <iframe
+                ref={iframeRef}
                 key={item.id}
                 src={youtubeEmbedUrl(item.youtube)}
                 title={item.title}
@@ -58,6 +64,7 @@ export default function MediaViewer({ ref, formatDate }) {
               autoPlay
               playsInline
               className="mediaViewer__media"
+              onEnded={close}
             />
           ) : (
             <img src={item.image} alt={item.title} className="mediaViewer__media" />

@@ -343,21 +343,26 @@ main .header .header__sinhala {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
       column-gap: 10px; } }
+/* Right-hand group: Track Order and Media Gallery. It takes
+   three columns (four on narrow desktops) so the buttons never squeeze,
+   and the tagline sits in the two columns before it. */
 .header__actions {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 8px; }
+  gap: 8px;
+  margin-left: auto; }
   @media (min-width: 1024px) {
     .header__actions {
-      grid-column: 7 / span 2; } }
-  /* Narrow desktops: two columns are too tight for both buttons, so they
-     take three and the tagline shifts left to make room. */
-  @media (min-width: 1024px) and (max-width: 1279px) {
-    .header__actions {
-      grid-column: 6 / span 3; }
+      grid-column: 6 / span 3;
+      gap: 12px; }
     .header__content .header__sinhala {
       grid-column: 4 / span 2; } }
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .header__actions {
+      grid-column: 5 / span 4; }
+    .header__content .header__sinhala {
+      grid-column: 3 / span 2; } }
 
 .delayedHeader > .header {
   transition: transform 0.4s ease-in-out;
@@ -391,11 +396,30 @@ main .header .header__content {
       padding-top: 30px;
       padding-bottom: 30px; } }
 
-main .header .header__logo {
-  height: 72px; }
+/* Over the hero the two seals stack in the top-right corner, Fair for Life
+   above the badge, at one width; height follows each file's own aspect
+   ratio, so neither is stretched. */
+main .header .header__actions {
+  margin-left: auto;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 12px; }
+
+/* No 1440px cap here, so on wide screens the seals stay in the hero's
+   right corner instead of drifting inward with the centred content box. */
+main .header .header__content {
+  max-width: none;
+  align-items: flex-start; }
+
+main .header .header__logo,
+main .header .fairForLifeIcon img {
+  width: 64px;
+  height: auto; }
   @media (min-width: 1024px) {
-    main .header .header__logo {
-      height: 112px; } }
+    main .header .header__logo,
+    main .header .fairForLifeIcon img {
+      width: 88px; } }
 .hero {
   width: 100%;
   height: 100vh;

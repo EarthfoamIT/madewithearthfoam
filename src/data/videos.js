@@ -15,7 +15,27 @@ export const VIDEOS = {
   },
 }
 
+export const YOUTUBE_ORIGIN = 'https://www.youtube-nocookie.com'
+
 export const youtubeThumbnail = (youtubeId, size = 'maxresdefault') => `https://i.ytimg.com/vi/${youtubeId}/${size}.jpg`
 
-export const youtubeEmbedUrl = (youtubeId) =>
-  `https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&rel=0&playsinline=1`
+// Keeps the player as plain as YouTube allows:
+//   rel=0             suggestions only from our own channel
+//   iv_load_policy=3  no annotation / card pop-ups
+//   enablejsapi=1     lets us hear when the video ends (useYouTubeEnded), so
+//                     we can close it before YouTube's end-screen grid shows
+// YouTube no longer lets sites hide the title bar, share/copy link button,
+// logo or the "More videos" panel on pause (showinfo and modestbranding were
+// retired), and covering them breaks YouTube's embed terms. The quality
+// selector stays in the settings menu.
+export const youtubeEmbedUrl = (youtubeId) => {
+  const params = new URLSearchParams({
+    autoplay: '1',
+    rel: '0',
+    iv_load_policy: '3',
+    playsinline: '1',
+    enablejsapi: '1',
+    origin: window.location.origin,
+  })
+  return `${YOUTUBE_ORIGIN}/embed/${youtubeId}?${params}`
+}

@@ -186,7 +186,7 @@ function TimelineRow({ item, onView, today }) {
 
 export default function MediaPage() {
   usePageMeta({
-    title: 'Gallery | Made With Earthfoam',
+    title: 'Media Gallery | Made With Earthfoam',
     description:
       'Awards, exhibitions, events, press coverage, brochures and videos from Earthfoam, the natural latex foam factory in Sri Lanka.',
     path: '/gallery',
@@ -250,7 +250,7 @@ export default function MediaPage() {
         <div className="contentgrid mb-6 lg:mb-8">
           <div className="lg:col-start-1 lg:col-span-4">
             <p className="eyebrow-sm color-gray7 mb-2" data-animate="slide-up">
-              Gallery
+              Media Gallery
             </p>
             <h1 className="pageTitle" data-animate="slide-up" data-delay="1">
               Moments worth keeping
