@@ -419,7 +419,11 @@ main .header .fairForLifeIcon img {
   @media (min-width: 1024px) {
     main .header .header__logo,
     main .header .fairForLifeIcon img {
-      width: 88px; } }
+      width: 88px; }
+    /* 88px wide gives 104.5px tall; round to a whole pixel so the edges stay
+       crisp while it moves. */
+    main .header .fairForLifeIcon img {
+      height: 105px; } }
 .hero {
   width: 100%;
   /* svh = viewport with the mobile browser bars showing, so the bottom-left
@@ -462,20 +466,23 @@ main .header .fairForLifeIcon img {
 /* Fair for Life seal in the hero's top-right corner: just the logo. The
    file has its own rounded corners, so no border-radius here, and
    drop-shadow (not box-shadow) follows that shape. */
+/* Only transform animates: the shadow stays put (animating a filter over the
+   playing hero video repaints every frame and stutters), and translate3d +
+   will-change keep the logo on its own GPU layer so it moves smoothly. */
 .fairForLifeIcon {
-  display: block;
-  filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.3));
-  transition: transform 0.3s, filter 0.3s; }
-  .fairForLifeIcon:hover {
-    transform: translateY(-2px);
-    filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4)); }
+  display: block; }
   .fairForLifeIcon img {
     display: block;
-    width: auto;
-    height: 52px; }
-  @media (min-width: 1024px) {
+    filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.35));
+    transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1);
+    will-change: transform; }
+  .fairForLifeIcon:hover img, .fairForLifeIcon:focus-visible img {
+    transform: translate3d(0, -2px, 0); }
+  @media (prefers-reduced-motion: reduce) {
     .fairForLifeIcon img {
-      height: 76px; } }
+      transition: none; }
+    .fairForLifeIcon:hover img, .fairForLifeIcon:focus-visible img {
+      transform: none; } }
 
 .hero__background {
   border-bottom-left-radius: 16px;
@@ -552,6 +559,14 @@ main .header .fairForLifeIcon img {
 
 .contentLayout__body, .contentLayout__gallery {
   max-width: 500px; }
+
+/* A YouTube film in the body runs the full width of the column (lined up
+   with the subhead above it); the text beside it keeps the 500px measure. */
+@media (min-width: 1024px) {
+  .contentLayout__body:has(> .ytEmbed) {
+    max-width: none; }
+    .contentLayout__body:has(> .ytEmbed) > :not(.ytEmbed) {
+      max-width: 500px; } }
 
 .contentLayout__gallery figure figcaption {
   background-color: rgba(32, 33, 34, 0.2);
@@ -2478,3 +2493,54 @@ main .header .fairForLifeIcon img {
   background: #E68276;
   border-color: #E68276;
   transform: scale(1.06); }
+
+/* Standards & Certifications: logos under each group's paragraph, linking
+   to the certificate PDFs. Each logo keeps its own shape; only the height is
+   shared. Selectors are prefixed with .certLogos so they win over .richtext. */
+.certLogos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px; }
+  @media (min-width: 1024px) {
+    .certLogos {
+      gap: 16px 24px; } }
+
+/* Tighter rhythm around the logo rows than the default richtext spacing. */
+.contentLayout__body .richtext p:has(+ .certLogos) {
+  margin-bottom: 16px; }
+.contentLayout__body .richtext .certLogos + h3 {
+  margin-top: 32px; }
+  @media (min-width: 1024px) {
+    .contentLayout__body .richtext p:has(+ .certLogos) {
+      margin-bottom: 20px; }
+    .contentLayout__body .richtext .certLogos + h3 {
+      margin-top: 56px; } }
+
+.certLogos .certLogos__link {
+  display: block;
+  text-decoration: none; }
+
+.certLogos .certLogos__img {
+  display: block;
+  height: 52px;
+  width: auto;
+  transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1), opacity 0.1s ease-out;
+  will-change: transform; }
+  @media (min-width: 1024px) {
+    .certLogos .certLogos__img {
+      height: 64px; } }
+
+.certLogos .certLogos__fallback {
+  display: block;
+  color: #9C9A9B; }
+
+.certLogos .certLogos__link:hover .certLogos__img, .certLogos .certLogos__link:focus-visible .certLogos__img {
+  opacity: 0.85;
+  transform: translate3d(0, -3px, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .certLogos .certLogos__img {
+    transition: opacity 0.18s ease-out; }
+  .certLogos .certLogos__link:hover .certLogos__img, .certLogos .certLogos__link:focus-visible .certLogos__img {
+    transform: none; } }

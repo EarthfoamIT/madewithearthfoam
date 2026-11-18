@@ -106,7 +106,7 @@ export const mediaItems = [
     date: '2026-04-22',
     summary: 'Placeholder video, using the brand story film from the home page.',
     image: HERO_VIDEOS.background.poster,
-    video: { src: HERO_VIDEOS.story.small, poster: HERO_VIDEOS.background.poster },
+    video: { src: HERO_VIDEOS.story.src, poster: HERO_VIDEOS.background.poster },
   },
   {
     id: 'sample-expo-2026',

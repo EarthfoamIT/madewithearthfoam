@@ -92,7 +92,7 @@ export default function Hero({ onVisibilityChange }) {
         <source src={HERO_VIDEOS.background.small} type="video/mp4" />
       </video>
 
-      <VideoModal ref={modalRef} sources={HERO_VIDEOS.story} captions={HERO_VIDEOS.story.captions} />
+      <VideoModal ref={modalRef} source={HERO_VIDEOS.story} />
     </section>
   )
 }

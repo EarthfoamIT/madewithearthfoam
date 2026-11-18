@@ -38,9 +38,12 @@ export const HERO_VIDEOS = {
     // First frame of the video, shown until it can play.
     poster: '/assets/madewith.hero_bg.poster.webp',
   },
+  // "Watch Our Story" film: the corporate video, VP9/Opus WebM.
+  // `src` is the 720p copy everyone gets; `large` (1080p) is used on wide or
+  // high-density screens when set. Leave `large` out to serve 720p only.
   story: {
-    large: '/assets/madewith.hero.1080_1920x1080_crf20.mp4',
-    small: '/assets/madewith.hero.1080_1280x720_crf20.mp4',
-    captions: '/assets/madewith.hero.vtt',
+    src: '/assets/corporate-video.720p.webm',
+    large: '/assets/corporate-video.1080p.webm',
+    type: 'video/webm',
   },
 }

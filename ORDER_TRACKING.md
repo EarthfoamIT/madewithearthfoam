@@ -9,7 +9,7 @@ The logic lives in the API module `api/src/ordertracking/` and in the page's wor
 The page calls one endpoint, which needs no login:
 
 ```
-GET https://api.hexagonasia.xyz/ordertracking?ordernum=BIA/CA/014/26
+GET https://api.earthfoam.lk/ordertracking?ordernum=BIA/CA/014/26
 ```
 
 - `ordernum` is trimmed, upper-cased and stripped of whitespace. It must match `^[A-Z0-9][A-Z0-9/-]{2,49}$`, or the API returns **400**.

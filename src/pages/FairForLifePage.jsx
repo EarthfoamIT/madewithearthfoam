@@ -7,7 +7,7 @@ import usePageMeta from '../hooks/usePageMeta.js'
 import { ArrowUpRightIcon } from '../components/icons.jsx'
 import '../styles/fair-for-life.css'
 
-const fairForLifeCert = certifications.find((cert) => cert.label === 'Fair For Life')
+const fairForLifeCert = certifications.find((cert) => cert.id === 'fair-for-life')
 
 // Figures as stated in the home page's "Our Forests" section.
 const STATS = [

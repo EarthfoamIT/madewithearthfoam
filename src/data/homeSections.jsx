@@ -5,12 +5,12 @@ import { Link } from 'react-router'
 import YouTubeEmbed from '../components/YouTubeEmbed.jsx'
 import { VIDEOS } from './videos.js'
 import ProjectCard from '../components/ProjectCard.jsx'
+import CertificationLogos from '../components/CertificationLogos.jsx'
 import { listedProjects } from './projects.js'
 
 // Gallery items:
 //   { type: 'image', src, width, height, alt, caption? }
 //   { type: 'video', src, caption }   (src lives in public/assets/)
-//   { type: 'certificates' }          (renders the certificate PDF links)
 
 export const homeSections = [
   {
@@ -77,32 +77,6 @@ export const homeSections = [
     ),
   },
   {
-    id: 'standards-and-certifications',
-    title: 'Standards & Certifications',
-    subhead: 'Our commitment to our product, employees, and community.',
-    bordered: true,
-    gallery: [{ type: 'certificates' }],
-    body: (
-      <>
-      <YouTubeEmbed {...VIDEOS.certifiedQuality} caption={VIDEOS.certifiedQuality.title} className="mb-5 lg:mb-8" />
-      <div className="richtext">
-        <h3 id="sustainable">Sustainable</h3>
-        <p>By working with a natural material, farming organically, focusing on biodiversity, and prioritizing the well-being of our workers, Earthfoam is a sustainable product for people and the planet.</p>
-        <h3 id="organic">Organic</h3>
-        <p>We source latex from certified organic rubber tree farms, and we pay our farmers a premium for the extra effort it takes to care for organic crops. With more biodiversity in our forests, other crops like tea, honey, and kithul syrup (a local sweetener) provide additional sources of income for the farms.</p>
-        <h3 id="safe">Safe</h3>
-        <p>Earthfoam holds the most stringent health and emissions certifications available and never contains fillers or synthetic latex.</p>
-        <h3 id="fair-trade">Fair Trade</h3>
-        <p>We are dedicated to maintaining the highest level of working conditions for our employees, and the overall security of the most vulnerable people in our supply chain; the agricultural farmers and workers. As the most stringent fair trade certification, Fair for Life is the most impactful certification we have.</p>
-        <h3 id="comfortable">Comfortable</h3>
-        <p>Synthetic alternatives have to innovate constantly to achieve the level of comfort that comes easily to natural latex foam. It has a soft, springy feel, is naturally breathable, and doesn’t lose its shape or support over time.</p>
-        <h3 id="consistent">Consistent</h3>
-        <p>Natural latex has natural variations depending on growing conditions, weather, etc. But because our team has so much experience, we’re able to fine-tune our production process to adapt to these variations and ensure consistency in every batch of Earthfoam.</p>
-      </div>
-      </>
-    ),
-  },
-  {
     // id kept from the old "Fair Trade Projects" title so existing links still work.
     id: 'fair-trade-projects',
     title: 'Organic & Fair Trade Program',
@@ -125,8 +99,39 @@ export const homeSections = [
     ),
   },
   {
+    id: 'standards-and-certifications',
+    title: 'Standards & Certifications',
+    subhead: 'Our commitment to our product, employees, and community.',
+    bordered: true,
+    gallery: [],
+    body: (
+      <>
+        <YouTubeEmbed {...VIDEOS.certifiedQuality} className="mb-5 lg:mb-8" />
+        <div className="richtext">
+          <h3 id="organic">Organic</h3>
+          <p>We source latex from certified organic rubber tree farms, and we pay our farmers a premium for the extra effort it takes to care for organic crops. With more biodiversity in our forests, other crops like tea, honey, cocoa, black pepper and kithul syrup (a local sweetener) provide additional sources of income for the farms.</p>
+          <CertificationLogos group="organic" />
+          <h3 id="fair-trade">Fair Trade</h3>
+          <p>We are dedicated to maintaining the highest level of working conditions for our employees, and the overall security of the most vulnerable people in our supply chain; the agricultural farmers and workers. As the most stringent fair trade certification, Fair for Life is the most impactful certification we have.</p>
+          <CertificationLogos group="fair-trade" />
+          <h3 id="sustainable">Sustainable</h3>
+          <p>By working with a natural material, farming organically, focusing on biodiversity, and prioritizing the well-being of our workers, Earthfoam is a sustainable product for people and the planet.</p>
+          <CertificationLogos group="sustainable" />
+          <h3 id="safe">Safe</h3>
+          <p>Earthfoam holds the most stringent health and emissions certifications available and never contains fillers or synthetic latex.</p>
+          <CertificationLogos group="safe" />
+          <h3 id="comfortable">Comfortable</h3>
+          <p>Synthetic alternatives have to innovate constantly to achieve the level of comfort that comes easily to natural latex foam. It has a soft, springy feel, is naturally breathable, and doesn’t lose its shape or support over time.</p>
+          <h3 id="consistent">Consistent</h3>
+          <p>Natural latex has natural variations depending on growing conditions, weather, etc. But because our team has so much experience, we’re able to fine-tune our production process to adapt to these variations and ensure consistency in every batch of Earthfoam.</p>
+        </div>
+      </>
+    ),
+  },
+  
+  {
     id: 'working-together',
-    title: 'Working Together',
+    title: 'Working With Us',
     subhead: 'How you can source from our factory and work together.',
     bordered: true,
     gallery: [
@@ -159,7 +164,7 @@ export const homeSections = [
         <p>Our foam is available wholesale in a variety of sizes and densities (including hard rubber). We can also adjust our molds to fit your needs. Reach out to us to discuss quantities and customization options. Licensing is available to use the Made with Earthfoam seal on your finished products.</p>
         <h3 id="product-collaboration">Product Collaboration</h3>
         <p>Want to see Your Brand x Earthfoam? We love to collab with like-minded companies and would be delighted to discuss making something together. We have our own product design teams and can be as involved as you want.</p>
-        <h3 id="white-label-manufacturing">White Label Manufacturing</h3>
+        <h3 id="white-label-manufacturing">OEM Manufacturing</h3>
         <p>Between our foam factory, our design team, and our sewing department, we are equipped to make sustainable, quality products from scratch. If you’re looking for a full-service production partner for your own brand (with or without the Made with Earthfoam seal) let’s talk about it.</p>
       </div>
     ),
