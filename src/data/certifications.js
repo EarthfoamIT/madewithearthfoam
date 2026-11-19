@@ -32,7 +32,7 @@ export const certificationGroups = [
     title: 'Fair Trade',
     certifications: [
       { id: 'fair-for-life', label: 'Fair for Life', file: 'FFL Certificate.pdf', logo: fairForLifeLogo },
-      { id: 'for-life', label: 'For Life' },
+      { id: 'for-life', label: 'For Life', file: 'FL_Certificate_Earthfoam Private Limited_20260515.pdf' },
     ],
   },
   {
@@ -50,7 +50,7 @@ export const certificationGroups = [
       { id: 'oeko-tex', label: 'Oeko-Tex', file: '2026-PVL-Cert-OekoTex.pdf' },
       { id: 'eco-institut', label: 'Eco-Institut', file: 'Eco Certificate.pdf' },
       { id: 'iso-9001', label: 'ISO 9001', file: 'ISO 90012015 Certificate.pdf' },
-      { id: 'wrap', label: 'WRAP' },
+      { id: 'wrap', label: 'WRAP', file: 'WRAP-Certificate-2026-10-26.pdf' },
     ],
   },
 ].map((group) => ({
