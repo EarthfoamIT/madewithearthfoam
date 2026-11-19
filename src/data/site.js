@@ -33,8 +33,8 @@ export const MAILCHIMP = {
 // Served from public/assets/ under the same URLs as the original site.
 export const HERO_VIDEOS = {
   background: {
-    large: '/assets/madewith.hero_bg.1080_1920x1080_crf20.mp4',
-    small: '/assets/madewith.hero_bg.1080_1280x720_crf20.mp4',
+    large: '/assets/madewith.hero_bg.1080p.webm',
+    small: '/assets/madewith.hero_bg.720p.webm',
     // First frame of the video, shown until it can play.
     poster: '/assets/madewith.hero_bg.poster.webp',
   },
