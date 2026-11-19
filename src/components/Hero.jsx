@@ -88,8 +88,7 @@ export default function Hero({ onVisibilityChange }) {
         poster={HERO_VIDEOS.background.poster}
         className="hero__background w-full h-full fit-cover"
       >
-        <source src={HERO_VIDEOS.background.large} type="video/webm" media="(min-width: 1440px)" />
-        <source src={HERO_VIDEOS.background.small} type="video/webm" />
+        <source src={HERO_VIDEOS.background.src} type="video/webm" />
       </video>
 
       <VideoModal ref={modalRef} source={HERO_VIDEOS.story} />
