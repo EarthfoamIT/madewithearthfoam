@@ -47,10 +47,11 @@ Rules:
 
 Made With Earthfoam (madewith.earthfoam.com):
 - Natural Dunlop latex foam (zero fillers, zero synthetics) for bedding, furniture, upholstery, footwear.
-- Fair For Life certified network of 323 small GOLS-certified organic farms in Sri Lanka, 1,700+ workers, 20+ year tree lifespan, rubberwood heats vulcanization boilers, Horana factory technicians average 15 years experience.
-- 9 certifications (PDFs under /assets/): GOTS (/assets/GOTS%20New.pdf), GOLS (/assets/2026-PVL-Cert-GOLS.pdf), Eco-Institut (/assets/Eco%20Certificate.pdf), FSC (/assets/FSC%20Certificate.pdf), Fair For Life (/assets/FFL%20Certificate.pdf), Oeko Tex (/assets/2026-PVL-Cert-OekoTex.pdf), OCS (/assets/OCS_Scope_Certificate_2025-04-02%2008_49_57%20UTC.pdf), ISO 9001 (/assets/ISO%2090012015%20Certificate.pdf), ISO 14001 (/assets/Earthfoam%20(Private)%20Limited%20-14k%202025.pdf).
-- Fair Trade projects: Healthcare (/increasing-access-to-healthcare), Productivity & Working Conditions (/improving-productivity-and-working-conditions), Community (/strengthening-the-community).
-- B2B services: Wholesale Latex Foam (custom sizes/densities including hard rubber, adjustable molds, Made with Earthfoam seal licensing), Product Collaboration, White Label Manufacturing.
+- Fair For Life certified network of 323 small GOLS-certified organic farms in Sri Lanka, 1,700+ workers, 20+ year tree lifespan, rubberwood heats vulcanization boilers, Horana factory technicians average 15 years experience; farm biodiversity includes tea, honey, cocoa, black pepper, and kithul syrup.
+- 11 certifications across 4 groups (organic, fair-trade, sustainable, safe; PDF certificates under /assets/): GOLS (/assets/2026-PVL-Cert-GOLS.pdf), GOTS (/assets/GOTS%20New.pdf), Organic Content Standard (/assets/OCS_Scope_Certificate_2025-04-02%2008_49_57%20UTC.pdf), Fair for Life (/assets/FFL%20Certificate.pdf), For Life (/assets/FL_Certificate_Earthfoam%20Private%20Limited_20260515.pdf), ISO 14001 (/assets/Earthfoam%20(Private)%20Limited%20-14k%202025.pdf), FSC (/assets/FSC%20Certificate.pdf), Oeko-Tex (/assets/2026-PVL-Cert-OekoTex.pdf), Eco-Institut (/assets/Eco%20Certificate.pdf), ISO 9001 (/assets/ISO%2090012015%20Certificate.pdf), and WRAP (/assets/WRAP-Certificate-2026-10-26.pdf).
+- Organic & Fair Trade Program (/fair-for-life and /#fair-trade-projects) with 3-step Development Fund: Healthcare (/increasing-access-to-healthcare), Productivity & Working Conditions (/improving-productivity-and-working-conditions), Community (/strengthening-the-community).
+- Working With Us / B2B services: Wholesale Latex Foam (custom sizes/densities including hard rubber, adjustable molds, Made with Earthfoam seal licensing), Product Collaboration, OEM / White-Label Manufacturing.
+- Media Gallery & Awards (/gallery and /gallery?type=awards): features the film "Earthfoam, Certified Quality" and 13 awards (2023-2026) including the 25th, 26th, and 27th Presidential Export Awards, PRISL (2025, 2026), National Chamber of Commerce (2025), CNCI (2026), People's Pinnacle Best Mattress Brand (2024), National Industry Brand Excellence (2024), and National Industry Excellence (2023). Never invent or cite placeholder sample items.
 
 Earthfoam Sri Lanka Retail (https://earthfoam.lk):
 - Organic Mattress (https://earthfoam.lk/products/mattress): 5-layer build (latex base & comfort layer, organic cotton batting, organic wool fire barrier, GOTS cotton cover), widths 36"/42"/48"/60"/72", lengths 72"/75"/78", heights 6"/8"/10".
@@ -119,18 +120,42 @@ function collectActions(text, tracking) {
   if (/\b(showroom\w*|dharmapala|colombo 03|info@earthfoam\.lk)\b/.test(lower)) {
     add({ label: 'Colombo Showroom (earthfoam.lk)', href: EARTHFOAMLK_LINKS.contact, external: true, kind: 'retail' })
   }
-  if (/\b(certif\w*|certs?|gols|gots|eco-institut|fsc|fair for life|oeko\w*|ocs|iso(?:\s*\d+)?)\b/.test(lower)) {
-    for (const cert of certifications.slice(0, 6)) {
-      if (lower.includes(cert.label.toLowerCase().split(' ')[0])) {
+  if (/\b(certif\w*|certs?|standards?|gols|gots|ocs|organic content standard|fair\s+for\s+life|for\s+life|iso(?:\s*\d+)?|fsc|oeko[-\s]*tex|eco[-\s]*institut|wrap)\b/.test(lower)) {
+    const certMatchers = {
+      GOLS: /\bgols\b/,
+      GOTS: /\bgots\b/,
+      'Organic Content Standard': /\b(ocs|organic content standard)\b/,
+      'Fair for Life': /\bfair\s+for\s+life\b/,
+      'For Life': /(?<!fair\s)\bfor\s+life\b/,
+      'ISO 14001': /\biso\s*14001\b/,
+      FSC: /\bfsc\b/,
+      'Oeko-Tex': /\boeko[-\s]*tex\b/,
+      'Eco-Institut': /\beco[-\s]*institut\b/,
+      'ISO 9001': /\biso\s*9001\b/,
+      WRAP: /\bwrap\b/,
+    }
+    const includeAllCerts = /\b(all\s+(?:9|11)|certif\w*|standards?)\b/.test(lower)
+    for (const cert of certifications) {
+      const matcher = certMatchers[cert.label]
+      if (includeAllCerts || (matcher && matcher.test(lower))) {
         add({ label: cert.label, href: cert.href, external: true, kind: 'pdf' })
       }
     }
   }
-  if (/\b(wholesale|white label|white-label|oem|seal|inquir\w*|quot\w*|collab\w*)\b/.test(lower)) {
+  if (/\b(fair\s+for\s+life|development fund|fair trade program|323)\b/.test(lower)) {
+    add({ label: 'Fair for Life', href: '/fair-for-life' })
+  }
+  if (/\b(awards?|export awards?|prisl|cnci|pinnacle|excellence|gallery)\b/.test(lower)) {
+    add({ label: 'Awards & Gallery', href: '/gallery?type=awards' })
+  }
+  if (/\b(video|film|certified quality|media|gallery)\b/.test(lower)) {
+    add({ label: 'Media Gallery', href: '/gallery' })
+  }
+  if (/\b(wholesale|white label|white-label|oem|working with us|seal|inquir\w*|quot\w*|collab\w*)\b/.test(lower)) {
     add({ label: 'Send an inquiry', kind: 'inquiry' })
   }
 
-  return actions.slice(0, 6)
+  return actions.slice(0, 12)
 }
 
 async function buildGroundedReply(userMessage, lookupOrder, logger) {
@@ -196,11 +221,17 @@ async function buildGroundedReply(userMessage, lookupOrder, logger) {
     }
   }
 
-  if (/\b(certif\w*|certs?|gols|gots|eco-institut|fsc|fair for life|oeko\w*|ocs|iso(?:\s*\d+)?)\b/.test(q)) {
+  if (/\b(certif\w*|certs?|standards?|gols|gots|ocs|organic content standard|fair\s+for\s+life|for\s+life|iso(?:\s*\d+)?|fsc|oeko[-\s]*tex|eco[-\s]*institut|wrap)\b/.test(q)) {
     return {
-      reply:
-        'Earthfoam holds 9 third-party certifications: **GOTS**, **GOLS**, **Eco-Institut**, **FSC**, **Fair For Life**, **Oeko-Tex Standard 100**, **Organic Content Standard (OCS)**, **ISO 9001**, and **ISO 14001**. Download the certificates below:',
-      actions: certifications.slice(0, 6).map((c) => ({
+      reply: [
+        'Earthfoam holds **11 third-party certifications** across four pillars:',
+        '- **Organic:** GOLS, GOTS, Organic Content Standard (OCS)',
+        '- **Fair Trade:** Fair for Life, For Life',
+        '- **Sustainable:** ISO 14001, FSC',
+        '- **Safe:** Oeko-Tex, Eco-Institut, ISO 9001, WRAP',
+        'Download the official certificates below:',
+      ].join('\n'),
+      actions: certifications.map((c) => ({
         label: c.label,
         href: c.href,
         external: true,
@@ -258,11 +289,23 @@ async function buildGroundedReply(userMessage, lookupOrder, logger) {
   if (/\b(wholesale|white label|white-label|oem|collab\w*|seal|licens\w*|sourc\w*|quot\w*|inquir\w*|contact)\b/.test(q)) {
     return {
       reply:
-        'Partner with our Horana, Sri Lanka factory via **Wholesale Latex Foam** (custom sizes, densities including hard rubber, adjustable molds, *Made with Earthfoam* seal licensing), **Product Collaboration**, or **White Label Manufacturing**. Click **Send an inquiry** below to reach `foamfactory@earthfoam.com`.',
+        'Partner with our Horana, Sri Lanka factory via **Wholesale Latex Foam** (custom sizes, densities including hard rubber, adjustable molds, *Made with Earthfoam* seal licensing), **Product Collaboration**, or **OEM / White-Label Manufacturing**. Click **Send an inquiry** below to reach `foamfactory@earthfoam.com`.',
       actions: [
         { label: 'Send an inquiry', kind: 'inquiry' },
-        { label: 'Working Together', href: '/#working-together', kind: 'link' },
+        { label: 'Working With Us', href: '/#working-together', kind: 'link' },
         { label: 'Contact Page', href: '/contact', kind: 'link' },
+      ],
+      mode: 'grounded',
+    }
+  }
+
+  if (/\b(award\w*|gallery|media|video\w*|youtube|press|exhibit\w*|pinnacle|prisl|presidential export)\b/.test(q)) {
+    return {
+      reply:
+        'Earthfoam’s **Media Gallery** highlights **13 industry & export awards (2023–2026)**—including Presidential Export Awards (*Best Exporter* 2022/2023 & 2023/2024), *People’s Pinnacle Award* (Best Mattress Brand 2024), National Chamber of Commerce 2025 awards, and PRISL *Most Outstanding Exporter* (2025 & 2026)—plus our *Earthfoam, Certified Quality* video.',
+      actions: [
+        { label: 'Awards Timeline', href: '/gallery?type=awards', kind: 'link' },
+        { label: 'Media Gallery', href: '/gallery', kind: 'link' },
       ],
       mode: 'grounded',
     }
@@ -270,10 +313,11 @@ async function buildGroundedReply(userMessage, lookupOrder, logger) {
 
   return {
     reply:
-      'I can help with:\n- **Live order tracking** (enter your order number from your confirmation/invoice, e.g. `ABC/012/26`)\n- **Mattresses, hybrids, toppers & pillows** from `earthfoam.lk`\n- **Certifications & PDFs** (GOTS, GOLS, Fair For Life, Eco-Institut, ISO)\n- **Wholesale, white-label & factory inquiries** (`foamfactory@earthfoam.com`)',
+      'I can help with:\n- **Live order tracking** (enter your order number from your confirmation/invoice, e.g. `ABC/012/26`)\n- **Mattresses, hybrids, toppers & pillows** from `earthfoam.lk`\n- **11 Certifications & PDFs** (GOLS, GOTS, Fair for Life, For Life, WRAP, ISO 9001/14001, Eco-Institut, Oeko-Tex, FSC, OCS)\n- **Fair for Life projects, Awards & OEM / Wholesale inquiries** (`foamfactory@earthfoam.com`)',
     actions: [
       { label: 'Track an order', href: '/track-order', kind: 'track' },
       { label: 'Shop Mattresses on earthfoam.lk', href: EARTHFOAMLK_LINKS.products, external: true, kind: 'retail' },
+      { label: 'Media Gallery & Awards', href: '/gallery', kind: 'link' },
       { label: 'Send an inquiry', kind: 'inquiry' },
     ],
     mode: 'grounded',
