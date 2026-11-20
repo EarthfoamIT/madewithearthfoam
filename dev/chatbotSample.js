@@ -43,7 +43,7 @@ Rules:
 1. Never invent prices, MOQs, or lead times not stated here. Retail products on earthfoam.lk use "Inquire price".
 2. Always call track_order ONLY when the user explicitly provides an order number from their confirmation/invoice. Never suggest or invent real customer order numbers; if asked for an example format, use the placeholder ABC/012/26 and never look up ABC/012/26.
 3. For consumer mattresses, toppers, pillows, or showroom visits, use the verified earthfoam.lk details below and include direct https://earthfoam.lk/... links.
-4. Formatting: Write like a natural, polished chat assistant. NEVER use Markdown headings (#, ##, ###) or horizontal dividers (---). Use short paragraphs, bold labels (**...**), and concise bullet points (- ).
+4. Formatting: Write like a natural, polished chat assistant. NEVER use Markdown headings (#, ##, ###) or horizontal dividers (---). Use short paragraphs, bold labels (**...**), and concise bullet points (- ). Always respond in clean English using standard ASCII/Latin characters (never emit stray CJK/Katakana characters), and write inch measurements clearly (e.g. 10" or 10 inches).
 
 Made With Earthfoam (madewith.earthfoam.com):
 - Natural Dunlop latex foam (zero fillers, zero synthetics) for bedding, furniture, upholstery, footwear.
@@ -54,9 +54,9 @@ Made With Earthfoam (madewith.earthfoam.com):
 - Media Gallery & Awards (/gallery and /gallery?type=awards): features the film "Earthfoam, Certified Quality" and 13 awards (2023-2026) including the 25th, 26th, and 27th Presidential Export Awards, PRISL (2025, 2026), National Chamber of Commerce (2025), CNCI (2026), People's Pinnacle Best Mattress Brand (2024), National Industry Brand Excellence (2024), and National Industry Excellence (2023). Never invent or cite placeholder sample items.
 
 Earthfoam Sri Lanka Retail (https://earthfoam.lk):
-- Organic Mattress (https://earthfoam.lk/products/mattress): 5-layer build (latex base & comfort layer, organic cotton batting, organic wool fire barrier, GOTS cotton cover), widths 36"/42"/48"/60"/72", lengths 72"/75"/78", heights 6"/8"/10".
-- 8 Hybrid Mattresses (https://earthfoam.lk/products/hybrid-mattress): Osaka (4/6/8/10"), Ventura (8" orthopaedic), Brandford (10" medium-soft/firmest coil), Meriden (12" pillow-top), Aurora (14" cool euro-top), Athens Euro Top (16"), Athens Signature (16"), Athens Legacy (18").
-- Organic Mattress Topper (https://earthfoam.lk/products/topper): 4-layer latex/wool/cotton, heights 1" & 2".
+- Organic Mattress (https://earthfoam.lk/products/mattress): 5-layer build (latex base & comfort layer, organic cotton batting, organic wool fire barrier, GOTS cotton cover), widths 36", 42", 48", 60", 72"; lengths 72", 75", 78"; heights 6", 8", 10" (inches).
+- 8 Hybrid Mattresses (https://earthfoam.lk/products/hybrid-mattress): Osaka (4", 6", 8", 10" heights), Ventura (8" height, orthopaedic), Brandford (10" height, medium-soft/firmest coil), Meriden (12" height, pillow-top), Aurora (14" height, cool euro-top), Athens Euro Top (16" height), Athens Signature (16" height), Athens Legacy (18" height).
+- Organic Mattress Topper (https://earthfoam.lk/products/topper): 4-layer latex/wool/cotton, heights 1" and 2" (inches).
 - 4 Natural Latex Pillows (https://earthfoam.lk/products/pillow): Standard 2-Zone (60/70/84x40x15cm), Contour Mono-Zone (60/70x40cm, 12/10cm or 10/8cm, Soft/Medium), Standard Mono-Zone (60x40x12.5cm), Knobby (59x36x13cm).
 - Showroom: No 45, Dharmapala Mawatha, Colombo 03 (open 7 days, 10 AM - 6 PM | info@earthfoam.lk | +94 114 245 245 | https://earthfoam.lk/contact).
 - Trials & Warranties: 100-day mattress/topper trial, 30-day pillow trial, 10-year mattress warranty, 5-year pillow warranty, free delivery to most of Sri Lanka (2 working days dispatch; 4 working days in Colombo).`
@@ -84,6 +84,16 @@ function sendJson(res, statusCode, body) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8')
   res.setHeader('Cache-Control', 'no-store')
   res.end(JSON.stringify(body))
+}
+
+function sanitizeAssistantText(text, userText = '') {
+  let out = `${text || ''}`
+  if (!/[\u3040-\u30ff\u3400-\u9fff]/.test(userText)) {
+    out = out
+      .replace(/(\d)\s*[\u3040-\u30ff\u3400-\u9fff]+/g, '$1"')
+      .replace(/[\u3040-\u30ff\u3400-\u9fff]+/g, '')
+  }
+  return out.trim()
 }
 
 function collectActions(userText, replyText, tracking) {
@@ -419,7 +429,7 @@ export default function chatbotSample(env = {}) {
                 const parts = modelContent?.parts || []
                 const calls = parts.filter((p) => p.functionCall)
                 if (!calls.length) {
-                  text = parts.map((p) => p.text || '').join('\n').trim()
+                  text = sanitizeAssistantText(parts.map((p) => p.text || '').join('\n'), lastUser.content)
                   break
                 }
                 contents.push(modelContent)

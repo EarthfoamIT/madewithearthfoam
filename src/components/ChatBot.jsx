@@ -74,8 +74,14 @@ function isSafeHref(href) {
   )
 }
 
-function stripDanglingRevealTokens(text) {
+function stripStrayCjkTokens(text) {
   return `${text || ''}`
+    .replace(/(\d)\s*[\u3040-\u30ff\u3400-\u9fff]+/g, '$1"')
+    .replace(/[\u3040-\u30ff\u3400-\u9fff]+/g, '')
+}
+
+function stripDanglingRevealTokens(text) {
+  return stripStrayCjkTokens(text)
     .replace(/\n[ \t]*[#*_-]{1,6}[ \t]*$/g, '')
     .replace(/(?:\*\*|`|#|---)$/, '')
 }
@@ -768,7 +774,9 @@ export default function ChatBot() {
               const isRevealing = msg.id === revealingId
               const visibleText = isRevealing
                 ? stripDanglingRevealTokens(msg.content.slice(0, revealedChars))
-                : msg.content
+                : msg.role === 'assistant'
+                  ? stripStrayCjkTokens(msg.content)
+                  : msg.content
 
               return (
                 <div
