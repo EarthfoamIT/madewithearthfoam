@@ -44,6 +44,7 @@ Rules:
 2. Always call track_order ONLY when the user explicitly provides an order number from their confirmation/invoice. Never suggest or invent real customer order numbers; if asked for an example format, use the placeholder ABC/012/26 and never look up ABC/012/26.
 3. For consumer mattresses, toppers, pillows, or showroom visits, use the verified earthfoam.lk details below and include direct https://earthfoam.lk/... links.
 4. Formatting: Write like a natural, polished chat assistant. NEVER use Markdown headings (#, ##, ###) or horizontal dividers (---). Use short paragraphs, bold labels (**...**), and concise bullet points (- ). Always respond in clean English using standard ASCII/Latin characters (never emit stray CJK/Katakana characters), and write inch measurements clearly (e.g. 10" or 10 inches).
+5. Inquiries & Lead Capture: Whenever a user asks to send an inquiry, requests a quote/price, or asks for sales to contact them, ALWAYS ask them for: (1) their name, (2) either their mobile/phone number or email address (at least one is required so our sales team knows who to contact), and (3) what they are inquiring about. Validate that the email (name@domain.com) or mobile/phone number (7-15 digits) is valid before calling submit_inquiry; if missing or invalid, ask the user to provide a valid mobile number or email. Never invent or guess contact details.
 
 Made With Earthfoam (madewith.earthfoam.com):
 - Natural Dunlop latex foam (zero fillers, zero synthetics) for bedding, furniture, upholstery, footwear.
@@ -94,6 +95,53 @@ function sanitizeAssistantText(text, userText = '') {
       .replace(/[\u3040-\u30ff\u3400-\u9fff]+/g, '')
   }
   return out.trim()
+}
+
+function validateInquiryPayload(payload) {
+  const name = `${payload?.name || ''}`.trim()
+  const email = `${payload?.email || ''}`.trim()
+  const phone = `${payload?.phone || ''}`.trim()
+  const company = `${payload?.company || ''}`.trim()
+  const productOrProject = `${payload?.productOrProject || ''}`.trim()
+  const message = `${payload?.message || ''}`.trim()
+  const inquiryType = payload?.inquiryType === 'retail' ? 'retail' : 'b2b'
+
+  if (!name || name.length < 2) {
+    return { ok: false, error: 'Please provide the visitor name.' }
+  }
+  if (!email && !phone) {
+    return {
+      ok: false,
+      error:
+        'Please provide either a valid email address or a mobile/phone number so our sales team knows who to contact.',
+    }
+  }
+  if (
+    email &&
+    (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) ||
+      /^(test|user|example|none|na|n\/a|unknown|visitor)@|@(example|test|domain|placeholder)\./i.test(email))
+  ) {
+    return { ok: false, error: 'Please enter a valid email address.' }
+  }
+  if (phone) {
+    const digits = phone.replace(/\D/g, '')
+    if (
+      !/^\+?[\d\s().-]{7,20}$/.test(phone) ||
+      digits.length < 7 ||
+      digits.length > 15 ||
+      /^(\d)\1+$/.test(digits)
+    ) {
+      return { ok: false, error: 'Please enter a valid mobile or phone number (7–15 digits).' }
+    }
+  }
+  if (!message || message.length < 3) {
+    return { ok: false, error: 'Please include a brief message about what you are inquiring about.' }
+  }
+
+  return {
+    ok: true,
+    data: { inquiryType, name, company, email, phone, productOrProject, message },
+  }
 }
 
 function collectActions(userText, replyText, tracking) {
@@ -337,7 +385,7 @@ async function buildGroundedReply(userMessage, lookupOrder, logger) {
   if (/\b(wholesale|white label|white-label|oem|collab\w*|seal|licens\w*|sourc\w*|quot\w*|inquir\w*|contact)\b/.test(q)) {
     return {
       reply:
-        'Partner with our Horana, Sri Lanka factory via **Wholesale Latex Foam** (custom sizes, densities including hard rubber, adjustable molds, *Made with Earthfoam* seal licensing), **Product Collaboration**, or **OEM / White-Label Manufacturing**. Click **Send an inquiry** below to reach `foamfactory@earthfoam.com`.',
+        'Partner with our Horana, Sri Lanka factory via **Wholesale Latex Foam** (custom sizes, densities including hard rubber, adjustable molds, *Made with Earthfoam* seal licensing), **Product Collaboration**, or **OEM / White-Label Manufacturing**. Share your **name**, **either your mobile number or email address**, and **what you need** (or click **Send an inquiry** below) so our sales team at `foamfactory@earthfoam.com` can contact you.',
       actions: [
         { label: 'Send an inquiry', kind: 'inquiry' },
         { label: 'Working With Us', href: '/#working-together', kind: 'link' },
@@ -400,17 +448,48 @@ export default function chatbotSample(env = {}) {
                 parts: [{ text: `${m.content}`.slice(0, 1200) }],
               }))
               const tools = [{
-                functionDeclarations: [{
-                  name: 'track_order',
-                  description: 'Look up live factory and shipping status for an Earthfoam order number.',
-                  parameters: {
-                    type: 'OBJECT',
-                    properties: { orderNumber: { type: 'STRING' } },
-                    required: ['orderNumber'],
+                functionDeclarations: [
+                  {
+                    name: 'track_order',
+                    description: 'Look up live factory and shipping status for an Earthfoam order number.',
+                    parameters: {
+                      type: 'OBJECT',
+                      properties: { orderNumber: { type: 'STRING' } },
+                      required: ['orderNumber'],
+                    },
                   },
-                }],
+                  {
+                    name: 'submit_inquiry',
+                    description:
+                      'Submit a B2B wholesale/white-label inquiry (to foamfactory@earthfoam.com) or retail mattress/pillow inquiry (to info@earthfoam.lk) ONLY after collecting the visitor name, at least one valid contact method (either email or mobile/phone number), and their message. Ask for a valid mobile number or email first if missing or invalid.',
+                    parameters: {
+                      type: 'OBJECT',
+                      properties: {
+                        inquiryType: {
+                          type: 'STRING',
+                          enum: ['b2b', 'retail'],
+                          description: 'Use "b2b" for wholesale/OEM/seal licensing or "retail" for mattresses/toppers/pillows/showroom.',
+                        },
+                        name: { type: 'STRING', description: 'Visitor full name' },
+                        email: {
+                          type: 'STRING',
+                          description: 'Visitor email address (required if mobile/phone is not provided)',
+                        },
+                        phone: {
+                          type: 'STRING',
+                          description: 'Visitor mobile or phone number, 7-15 digits (required if email is not provided)',
+                        },
+                        company: { type: 'STRING', description: 'Company name (optional)' },
+                        productOrProject: { type: 'STRING', description: 'Product or project interest' },
+                        message: { type: 'STRING', description: 'Summary of requirements or question' },
+                      },
+                      required: ['inquiryType', 'name', 'message'],
+                    },
+                  },
+                ],
               }]
               let trackingData = null
+              let inquirySubmitted = false
               let text = ''
               for (let step = 0; step < 3; step += 1) {
                 const geminiRes = await fetch(endpoint, {
@@ -456,6 +535,33 @@ export default function chatbotSample(env = {}) {
                         },
                       })
                     }
+                  } else if (p.functionCall.name === 'submit_inquiry') {
+                    const validation = validateInquiryPayload(p.functionCall.args || {})
+                    if (!validation.ok) {
+                      fnResponses.push({
+                        functionResponse: {
+                          name: 'submit_inquiry',
+                          response: { ok: false, error: validation.error },
+                        },
+                      })
+                    } else {
+                      const { inquiryType, name, email, phone } = validation.data
+                      const recipient = inquiryType === 'retail' ? 'info@earthfoam.lk' : 'foamfactory@earthfoam.com'
+                      const contact = [email, phone].filter(Boolean).join(' / ')
+                      server.config.logger.info(`[chatbot-sample] Dev in-chat inquiry captured for ${recipient} from ${name} (${contact})`)
+                      inquirySubmitted = true
+                      fnResponses.push({
+                        functionResponse: {
+                          name: 'submit_inquiry',
+                          response: {
+                            ok: true,
+                            recipient,
+                            contact,
+                            message: `Thank you, ${name}. In production this inquiry goes directly to ${recipient} and our sales team will contact you via ${contact}.`,
+                          },
+                        },
+                      })
+                    }
                   }
                 }
                 contents.push({ role: 'user', parts: fnResponses })
@@ -465,6 +571,7 @@ export default function chatbotSample(env = {}) {
                   reply: text,
                   actions: collectActions(lastUser.content, text, trackingData),
                   tracking: trackingData || undefined,
+                  inquirySubmitted: inquirySubmitted || undefined,
                   mode: 'gemini',
                 })
               }
@@ -486,18 +593,18 @@ export default function chatbotSample(env = {}) {
         }
         try {
           const body = await readJsonBody(req)
-          const name = `${body.name || ''}`.trim()
-          const email = `${body.email || ''}`.trim()
-          const message = `${body.message || ''}`.trim()
-          if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !message) {
-            return sendJson(res, 400, { message: 'Please provide your name, a valid email, and a message.' })
+          const validation = validateInquiryPayload(body)
+          if (!validation.ok) {
+            return sendJson(res, 400, { message: validation.error })
           }
-          const recipient = body.inquiryType === 'retail' ? 'info@earthfoam.lk' : 'foamfactory@earthfoam.com'
-          server.config.logger.info(`[chatbot-sample] Dev inquiry captured for ${recipient} from ${name} <${email}>`)
+          const { inquiryType, name, email, phone } = validation.data
+          const recipient = inquiryType === 'retail' ? 'info@earthfoam.lk' : 'foamfactory@earthfoam.com'
+          const contact = [email, phone].filter(Boolean).join(' / ')
+          server.config.logger.info(`[chatbot-sample] Dev inquiry captured for ${recipient} from ${name} (${contact})`)
           return sendJson(res, 200, {
             ok: true,
             recipient,
-            message: `Thank you, ${name}. In production this inquiry goes directly to ${recipient} (captured in dev log).`,
+            message: `Thank you, ${name}. In production this inquiry goes directly to ${recipient} (captured in dev log; contact: ${contact}).`,
           })
         } catch (err) {
           return sendJson(res, 400, { message: err.message || 'Invalid inquiry.' })

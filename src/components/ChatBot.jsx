@@ -356,6 +356,15 @@ function ActionPills({ actions, onOpenInquiry, onNavigateInternal }) {
   )
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+function isValidPhone(value) {
+  const trimmed = `${value || ''}`.trim()
+  if (!/^\+?[\d\s().-]{7,20}$/.test(trimmed)) return false
+  const digits = trimmed.replace(/\D/g, '')
+  return digits.length >= 7 && digits.length <= 15 && !/^(\d)\1+$/.test(digits)
+}
+
 function InquiryForm({ onClose, onSubmitted }) {
   const [inquiryType, setInquiryType] = useState('b2b')
   const [name, setName] = useState('')
@@ -370,17 +379,44 @@ function InquiryForm({ onClose, onSubmitted }) {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+
+    const cleanName = name.trim()
+    const cleanEmail = email.trim()
+    const cleanPhone = phone.trim()
+    const cleanMsg = message.trim()
+
+    if (cleanName.length < 2) {
+      setError('Please enter your name.')
+      return
+    }
+    if (!cleanEmail && !cleanPhone) {
+      setError('Please provide either your email address or mobile number so our sales team can contact you.')
+      return
+    }
+    if (cleanEmail && !EMAIL_REGEX.test(cleanEmail)) {
+      setError('Please enter a valid email address (e.g. name@example.com).')
+      return
+    }
+    if (cleanPhone && !isValidPhone(cleanPhone)) {
+      setError('Please enter a valid mobile or phone number (7–15 digits).')
+      return
+    }
+    if (cleanMsg.length < 3) {
+      setError('Please include a brief message about your inquiry.')
+      return
+    }
+
     setBusy(true)
 
     try {
       const res = await sendChatInquiry({
         inquiryType,
-        name,
-        company,
-        email,
-        phone,
-        productOrProject,
-        message,
+        name: cleanName,
+        company: company.trim(),
+        email: cleanEmail,
+        phone: cleanPhone,
+        productOrProject: productOrProject.trim(),
+        message: cleanMsg,
       })
       onSubmitted(res)
     } catch (err) {
@@ -443,10 +479,9 @@ function InquiryForm({ onClose, onSubmitted }) {
         <input
           className="chatbot__field"
           type="email"
-          placeholder="Email"
+          placeholder="Email (or mobile below)"
           aria-label="Email"
           autoComplete="email"
-          required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -462,8 +497,8 @@ function InquiryForm({ onClose, onSubmitted }) {
         <input
           className="chatbot__field"
           type="tel"
-          placeholder="Phone (optional)"
-          aria-label="Phone"
+          placeholder="Mobile / Phone (or email above)"
+          aria-label="Mobile or Phone"
           autoComplete="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
