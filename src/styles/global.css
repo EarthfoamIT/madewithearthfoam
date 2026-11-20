@@ -30,6 +30,11 @@ ol, ul {
 *, *:before, *:after {
   box-sizing: border-box; }
 
+/* No blue flash on tap in mobile browsers; buttons and links keep their own
+   :active / :focus-visible styles. */
+html {
+  -webkit-tap-highlight-color: transparent; }
+
 a {
   color: inherit;
   text-decoration: none;

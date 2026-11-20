@@ -9,16 +9,17 @@ import {
   CirclePlay,
   Download,
   FileText,
+  GitCommitVertical,
   ImageIcon,
   LayoutGrid,
   Newspaper,
   Play,
   Presentation,
 } from 'lucide-react'
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import MediaViewer from '../components/MediaViewer.jsx'
-import { MEDIA_CATEGORIES, mediaItems } from '../data/media.js'
+import { MEDIA_CATEGORIES, TOP_ACHIEVEMENTS, mediaItems } from '../data/media.js'
 import usePageMeta from '../hooks/usePageMeta.js'
 import '../styles/media.css'
 
@@ -47,11 +48,17 @@ function todayIso() {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
 
+// Entries may give just 'YYYY' when only the year is known.
+const hasDay = (item) => item.date.length === 10
 const yearOf = (item) => Number(item.date.slice(0, 4))
-const monthOf = (item) => Number(item.date.slice(5, 7)) - 1
+// -1 for year-only entries, so they never land in a month.
+const monthOf = (item) => (hasDay(item) ? Number(item.date.slice(5, 7)) - 1 : -1)
+// Year-only entries sort as the end of their year ('2024-13' > '2024-12-31').
+const sortKey = (item) => (hasDay(item) ? item.date : `${item.date}-13`)
 
-// "18 Sep 2026", "13–16 Jan 2027", "30 Sep – 2 Oct 2026"
+// "18 Sep 2026", "13–16 Jan 2027", "30 Sep – 2 Oct 2026", or "2024" / "2022/23"
 function formatDate(item) {
+  if (!hasDay(item)) return item.period ?? item.date
   const start = parseDate(item.date)
   const full = { day: 'numeric', month: 'short', year: 'numeric' }
   if (!item.endDate || item.endDate === item.date) return start.toLocaleDateString('en-GB', full)
@@ -70,13 +77,15 @@ function formatDate(item) {
 const SCHEDULED = new Set(['events', 'exhibitions'])
 const isUpcoming = (item, today) => SCHEDULED.has(item.category) && (item.endDate || item.date) >= today
 
+const isTop = (item) => (TOP_ACHIEVEMENTS.has(item.achievement) ? 1 : 0)
+
 // --- What an entry does when opened ---
 
 function actionFor(item) {
   if (item.video || item.youtube) return { label: 'Watch', icon: Play }
   if (item.file) return { label: 'Open PDF', icon: Download, href: item.file }
   if (item.href) return { label: 'Read', icon: ArrowUpRight, href: item.href }
-  if (item.image) return { label: 'View', icon: ImageIcon }
+  if (item.image || item.category === 'awards') return { label: 'View', icon: ImageIcon }
   return null
 }
 
@@ -120,6 +129,7 @@ function CategoryTag({ item, today }) {
         <Icon size={13} strokeWidth={1.75} aria-hidden="true" />
         {CATEGORY_LABELS[item.category]}
       </span>
+      {item.achievement && <span className="mediaEntry__tag mediaEntry__tag--soon">{item.achievement}</span>}
       {isUpcoming(item, today) && <span className="mediaEntry__tag mediaEntry__tag--soon">Upcoming</span>}
     </p>
   )
@@ -131,13 +141,25 @@ function Meta({ item }) {
   return <p className="text-14 color-gray7">{parts.join(' · ')}</p>
 }
 
+// Stands in for a missing photo (awards, until the photos arrive).
+function Thumb({ item }) {
+  const src = item.image ?? item.photos?.[0]?.src
+  if (src) return <img src={src} alt="" loading="lazy" />
+  const Icon = CATEGORY_ICONS[item.category]
+  return (
+    <span className="mediaThumb__placeholder" aria-hidden="true">
+      <Icon size={28} strokeWidth={1.25} />
+    </span>
+  )
+}
+
 // --- Cards ---
 
 function GridCard({ item, onView, today }) {
   return (
     <li className="mediaCard mediaEntry">
       <div className="mediaCard__thumb">
-        {item.image ? <img src={item.image} alt="" loading="lazy" /> : null}
+        <Thumb item={item} />
         {(item.video || item.youtube) && (
           <span className="mediaCard__play" aria-hidden="true">
             <Play size={18} strokeWidth={1.75} />
@@ -156,12 +178,19 @@ function GridCard({ item, onView, today }) {
 }
 
 function TimelineRow({ item, onView, today }) {
-  const start = parseDate(item.date)
+  const start = hasDay(item) ? parseDate(item.date) : null
+  const Icon = CATEGORY_ICONS[item.category]
   return (
     <li className="mediaRow mediaEntry">
       <div className="mediaRow__date" aria-hidden="true">
-        <span className="mediaRow__day">{start.getDate()}</span>
-        <span className="eyebrow-sm color-gray7">{start.toLocaleDateString('en-GB', { weekday: 'short' })}</span>
+        {start ? (
+          <>
+            <span className="mediaRow__day">{start.getDate()}</span>
+            <span className="eyebrow-sm color-gray7">{start.toLocaleDateString('en-GB', { weekday: 'short' })}</span>
+          </>
+        ) : (
+          <Icon className="color-gray7" size={28} strokeWidth={1.25} />
+        )}
       </div>
       <div className="mediaRow__body">
         <CategoryTag item={item} today={today} />
@@ -173,12 +202,128 @@ function TimelineRow({ item, onView, today }) {
         {item.summary && <p className="mediaRow__summary color-gray8">{item.summary}</p>}
         <ActionHint item={item} />
       </div>
-      {item.image && (
-        <div className="mediaRow__thumb">
-          <img src={item.image} alt="" loading="lazy" />
-        </div>
-      )}
+      <div className="mediaRow__thumb">
+        <Thumb item={item} />
+      </div>
     </li>
+  )
+}
+
+// --- Awards: one timeline through every year, newest first ---
+
+function AwardEntry({ item, onView }) {
+  return (
+    <li className="awardEntry mediaEntry">
+      <span className="awardEntry__node" aria-hidden="true" />
+      <div>
+        <p className="eyebrow-sm awardEntry__achievement mb-2">
+          <Award size={13} strokeWidth={1.75} aria-hidden="true" />
+          {item.achievement}
+        </p>
+        <EntryTitle item={item} onView={onView} className="h3" />
+        <p className="text-14 color-gray7 mt-1">
+          {[item.source, item.period, item.location].filter(Boolean).join(' · ')}
+        </p>
+        {item.summary && <p className="mediaRow__summary color-gray8">{item.summary}</p>}
+        <ActionHint item={item} />
+      </div>
+      <div className="awardEntry__thumb">
+        <Thumb item={item} />
+      </div>
+    </li>
+  )
+}
+
+function AwardsTimeline({ items, onView }) {
+  const years = [...new Set(items.map(yearOf))].sort((a, b) => b - a)
+  const byYear = years.map((year) => ({ year, items: items.filter((item) => yearOf(item) === year) }))
+  const yearsKey = years.join(',')
+
+  // The rail follows whichever year is in the top part of the screen.
+  const [active, setActive] = useState(years[0])
+  const sections = useRef({})
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) if (entry.isIntersecting) setActive(Number(entry.target.dataset.year))
+      },
+      { rootMargin: '-160px 0px -55% 0px' },
+    )
+    for (const el of Object.values(sections.current)) if (el) observer.observe(el)
+    return () => observer.disconnect()
+  }, [yearsKey])
+
+  // On phones the rail is a sideways row: keep the lit year in view. Only
+  // the row scrolls, never the page.
+  const rail = useRef(null)
+  useEffect(() => {
+    const list = rail.current
+    const chip = list?.querySelector('[aria-current="true"]')
+    if (!list || !chip || list.scrollWidth <= list.clientWidth) return
+    const left = chip.offsetLeft - (list.clientWidth - chip.offsetWidth) / 2
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    list.scrollTo({ left, behavior: smooth ? 'smooth' : 'auto' })
+  }, [active])
+
+  const jump = (year) => {
+    setActive(year)
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    sections.current[year]?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' })
+  }
+
+  const plural = (n) => `${n} ${n === 1 ? 'award' : 'awards'}`
+
+  return (
+    <div className="awardsTimeline mt-4 lg:mt-6" data-animate="slide-up">
+      <nav className="awardsYears" aria-label="Jump to year">
+        <p className="eyebrow-sm color-gray7 mb-3">
+          {plural(items.length)} since {years.at(-1)}
+        </p>
+        <ol ref={rail} className="awardsYears__list">
+          {byYear.map(({ year, items: inYear }) => (
+            <li key={year}>
+              <button
+                type="button"
+                className="awardsYear"
+                aria-current={active === year ? 'true' : undefined}
+                onClick={() => jump(year)}
+              >
+                <span className="awardsYear__node" aria-hidden="true" />
+                <span className="awardsYear__num">{year}</span>
+                <span className="text-14 color-gray7">{plural(inYear.length)}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <div className="awardsSpine">
+        {byYear.map(({ year, items: inYear }) => (
+          <section
+            key={year}
+            ref={(el) => {
+              sections.current[year] = el
+            }}
+            data-year={year}
+            className="awardsSpine__year"
+            aria-labelledby={`awards-${year}`}
+          >
+            <header className="awardsSpine__head">
+              <span className="awardsSpine__node" aria-hidden="true" />
+              <h2 id={`awards-${year}`} className="awardsSpine__num">
+                {year}
+              </h2>
+              <p className="text-14 color-gray7">{plural(inYear.length)}</p>
+            </header>
+            <ol>
+              {inYear.map((item) => (
+                <AwardEntry key={item.id} item={item} onView={onView} />
+              ))}
+            </ol>
+          </section>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -211,7 +356,11 @@ export default function MediaPage() {
   }
 
   const today = todayIso()
-  const sorted = useMemo(() => [...mediaItems].sort((a, b) => b.date.localeCompare(a.date)), [])
+  // Newest first; on the same date, first-place awards lead.
+  const sorted = useMemo(
+    () => [...mediaItems].sort((a, b) => sortKey(b).localeCompare(sortKey(a)) || isTop(b) - isTop(a)),
+    [],
+  )
   const filtered = type ? sorted.filter((item) => item.category === type) : sorted
   const upcoming = sorted.filter((item) => isUpcoming(item, today)).reverse()
 
@@ -232,13 +381,19 @@ export default function MediaPage() {
   const monthCounts = MONTHS.map((_, m) => inYear.filter((item) => monthOf(item) === m).length)
   const shown = month === null || !monthCounts[month] ? inYear : inYear.filter((item) => monthOf(item) === month)
 
-  // Group the timeline by month, newest first.
+  // Group the timeline by month, newest first. Entries with only a year go
+  // last, under "Also in <year>" (a month filter leaves them out).
   const groups = []
-  for (const item of shown) {
+  for (const item of shown.filter(hasDay)) {
     const m = monthOf(item)
     if (groups.at(-1)?.month !== m) groups.push({ month: m, items: [] })
     groups.at(-1).items.push(item)
   }
+  const yearOnly = shown.filter((item) => !hasDay(item))
+  if (yearOnly.length) groups.push({ month: null, items: yearOnly })
+
+  // Awards get their own timeline across all years instead of the calendar.
+  const awardsTimeline = type === 'awards' && view === 'calendar'
 
   const goToYear = (y) => update({ year: y, month: null })
   const typeLabel = type ? CATEGORY_LABELS[type].toLowerCase() : null
@@ -324,8 +479,17 @@ export default function MediaPage() {
           <div className="mediaViewToggle" role="group" aria-label="View" data-view={view}>
             <span className="mediaViewToggle__thumb" aria-hidden="true" />
             <button type="button" aria-pressed={view === 'calendar'} onClick={() => update({ view: null })}>
-              <CalendarRange size={16} strokeWidth={1.75} aria-hidden="true" />
-              Calendar
+              {type === 'awards' ? (
+                <>
+                  <GitCommitVertical size={16} strokeWidth={1.75} aria-hidden="true" />
+                  Timeline
+                </>
+              ) : (
+                <>
+                  <CalendarRange size={16} strokeWidth={1.75} aria-hidden="true" />
+                  Calendar
+                </>
+              )}
             </button>
             <button type="button" aria-pressed={view === 'grid'} onClick={() => update({ view: 'grid', month: null })}>
               <LayoutGrid size={16} strokeWidth={1.75} aria-hidden="true" />
@@ -336,6 +500,8 @@ export default function MediaPage() {
 
         {filtered.length === 0 ? (
           <p className="h3 color-gray7 mt-6">Nothing here yet. Check back soon.</p>
+        ) : awardsTimeline ? (
+          <AwardsTimeline key="awards" items={filtered} onView={openViewer} />
         ) : view === 'grid' ? (
           <ul key="grid" className="mediaGrid mt-4 lg:mt-6" data-animate="slide-up">
             {filtered.map((item) => (
@@ -410,9 +576,11 @@ export default function MediaPage() {
                 </p>
               ) : (
                 groups.map((group) => (
-                  <section key={group.month} className="mediaTimeline__group">
+                  <section key={group.month ?? 'year'} className="mediaTimeline__group">
                     <h3 className="eyebrow-sm color-gray7 mediaTimeline__month">
-                      {new Date(year, group.month, 1).toLocaleString('en-GB', { month: 'long' })} {year}
+                      {group.month === null
+                        ? `Also in ${year}`
+                        : `${new Date(year, group.month, 1).toLocaleString('en-GB', { month: 'long' })} ${year}`}
                     </h3>
                     <ul>
                       {group.items.map((item) => (

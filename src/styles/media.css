@@ -462,3 +462,381 @@
     width: 100%;
     height: 100%;
     border: 0; }
+
+/* Placeholder for entries without a photo yet. Fills .mediaCard__thumb,
+   .mediaRow__thumb or .awardEntry__thumb. */
+.mediaThumb__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #5E5E5E; }
+
+/* --- Awards timeline: year rail on the left, one spine through every year --- */
+
+.awardsTimeline {
+  display: grid;
+  gap: 30px; }
+  @media (min-width: 1024px) {
+    .awardsTimeline {
+      grid-template-columns: minmax(260px, 2fr) 6fr;
+      gap: 60px; } }
+
+/* Year rail, the year on screen lit up. Phones and tablets: a row of
+   years pinned under the header (81px) that scrolls sideways; the nav box
+   steps aside (display: contents) so the row can stick for the whole
+   timeline. Desktop: a sticky vertical list joined by a line. */
+@media (max-width: 1023px) {
+  .awardsYears {
+    display: contents; } }
+@media (min-width: 1024px) {
+  .awardsYears {
+    position: sticky;
+    top: 150px;
+    align-self: start; } }
+
+.awardsYears__list {
+  position: sticky;
+  top: 81px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -15px;
+  padding: 10px 15px;
+  border-bottom: 1px solid #202122;
+  background: #141617; }
+  .awardsYears__list::-webkit-scrollbar {
+    display: none; }
+  @media (min-width: 1024px) {
+    .awardsYears__list {
+      position: relative;
+      top: auto;
+      z-index: auto;
+      flex-direction: column;
+      gap: 0;
+      overflow: visible;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: none; }
+      .awardsYears__list::before {
+        content: '';
+        position: absolute;
+        top: 24px;
+        bottom: 24px;
+        left: 5px;
+        width: 1px;
+        background: #313131; } }
+
+.awardsYear {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex: none;
+  padding: 8px 16px;
+  border: 1px solid #313131;
+  border-radius: 1000px;
+  color: #9C9A9B;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.3s, color 0.3s; }
+  .awardsYear:hover {
+    color: #FFFFFF; }
+  .awardsYear .text-14 {
+    white-space: nowrap; }
+  .awardsYear[aria-current="true"] {
+    border-color: #E68276;
+    color: #FFFFFF; }
+  @media (min-width: 1024px) {
+    .awardsYear {
+      position: relative;
+      display: grid;
+      grid-template-columns: 11px auto 1fr;
+      align-items: baseline;
+      column-gap: 20px;
+      width: 100%;
+      padding: 12px 0;
+      border: 0;
+      border-radius: 0; }
+      .awardsYear .text-14 {
+        justify-self: end; } }
+
+.awardsYear__node {
+  display: none; }
+  @media (min-width: 1024px) {
+    .awardsYear__node {
+      display: block;
+      position: relative;
+      z-index: 1;
+      align-self: center;
+      width: 11px;
+      height: 11px;
+      border: 1px solid #5E5E5E;
+      border-radius: 50%;
+      background: #141617;
+      transition: border-color 0.3s, background-color 0.3s; }
+      .awardsYear:hover .awardsYear__node {
+        border-color: #E68276; }
+      .awardsYear[aria-current="true"] .awardsYear__node {
+        border-color: #E68276;
+        background: #E68276; } }
+
+.awardsYear__num {
+  font-family: "GT America", sans-serif;
+  font-size: 20px;
+  line-height: 110%;
+  letter-spacing: -0.04em; }
+  @media (min-width: 1024px) {
+    .awardsYear__num {
+      font-size: 32px; } }
+
+/* The spine: one line down the left, a filled node per year and a hollow
+   node per award. */
+.awardsSpine {
+  position: relative;
+  padding-left: 32px; }
+  @media (min-width: 768px) {
+    .awardsSpine {
+      padding-left: 48px; } }
+  .awardsSpine::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    bottom: 0;
+    left: 5px;
+    width: 1px;
+    background: linear-gradient(#313131 85%, rgba(49, 49, 49, 0)); }
+
+.awardsSpine__year {
+  /* Clears the sticky header and year row when jumped to from the rail. */
+  scroll-margin-top: 150px; }
+  @media (min-width: 1024px) {
+    .awardsSpine__year {
+      scroll-margin-top: 150px; } }
+  .awardsSpine__year:not(:last-child) {
+    margin-bottom: 56px; }
+    @media (min-width: 1024px) {
+      .awardsSpine__year:not(:last-child) {
+        margin-bottom: 80px; } }
+
+.awardsSpine__head {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #202122; }
+
+.awardsSpine__node {
+  position: absolute;
+  top: 50%;
+  left: -32px;
+  width: 11px;
+  height: 11px;
+  margin-top: -14px;
+  border-radius: 50%;
+  background: #E68276;
+  box-shadow: 0 0 0 6px #141617; }
+  @media (min-width: 768px) {
+    .awardsSpine__node {
+      left: -48px; } }
+
+.awardsSpine__num {
+  font-family: "GT America", sans-serif;
+  font-size: 48px;
+  line-height: 90%;
+  font-weight: 400;
+  letter-spacing: -0.04em; }
+  @media (min-width: 1024px) {
+    .awardsSpine__num {
+      font-size: 84px; } }
+
+/* Each award is a card whose background lifts a shade off black on hover. */
+.awardEntry {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-top: 8px;
+  padding: 20px;
+  border-radius: 16px;
+  transition: background-color 0.1s ease-out; }
+  .awardEntry:hover {
+    background-color: #1B1C1D; }
+  @media (min-width: 768px) {
+    .awardEntry {
+      grid-template-columns: 1fr 200px;
+      gap: 30px; } }
+
+.awardEntry__node {
+  position: absolute;
+  top: 29px;
+  left: -31px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid #5E5E5E;
+  border-radius: 50%;
+  background: #141617;
+  transition: border-color 0.3s, background-color 0.3s; }
+  @media (min-width: 768px) {
+    .awardEntry__node {
+      left: -47px; } }
+  .awardEntry:hover .awardEntry__node {
+    border-color: #E68276;
+    background: #E68276; }
+
+.awardEntry__achievement {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #E68276; }
+
+.awardEntry__thumb {
+  display: none; }
+  @media (min-width: 768px) {
+    .awardEntry__thumb {
+      display: block;
+      aspect-ratio: 4 / 3;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #202122; }
+      .awardEntry__thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.215, 0.61, 0.355, 1); }
+      .mediaEntry:hover .awardEntry__thumb img {
+        transform: scale(1.04); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .awardsYear, .awardsYear__node, .awardEntry, .awardEntry__node {
+    transition: none; } }
+
+/* --- Award card in the viewer: photos left, details right (stacked on
+   phones), same photo + title + text rhythm as the case-study cards --- */
+
+.modal.mediaViewer--card {
+  width: min(92vw, 1040px);
+  max-height: 92vh;
+  overflow-y: auto;
+  /* Page black with a thin outline, so the card stands off the backdrop. */
+  border: 1px solid #313131;
+  border-radius: 16px;
+  background: #141617; }
+  /* Tapping inside focuses the dialog itself; its buttons keep their rings. */
+  .modal.mediaViewer--card:focus {
+    outline: none; }
+
+.awardCard {
+  position: relative;
+  display: grid;
+  gap: 24px;
+  padding: 16px; }
+  @media (min-width: 768px) {
+    .awardCard {
+      grid-template-columns: 3fr 2fr;
+      gap: 40px;
+      padding: 24px; } }
+
+.awardCard .mediaViewer__close {
+  top: 28px;
+  right: 28px; }
+  @media (min-width: 768px) {
+    .awardCard .mediaViewer__close {
+      top: 12px;
+      right: 12px; } }
+
+.awardCard__photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #202122;
+  /* Horizontal swipes change photo; vertical ones still scroll. */
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none; }
+  .awardCard__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-user-drag: none; }
+
+/* Each new photo slides in from the side it came from. */
+.awardCard__slide {
+  width: 100%;
+  height: 100%;
+  animation: awardCardIn 0.35s cubic-bezier(0.215, 0.61, 0.355, 1); }
+  .awardCard__slide[data-dir="prev"] {
+    animation-name: awardCardInPrev; }
+
+@keyframes awardCardIn {
+  from {
+    opacity: 0;
+    transform: translateX(24px); } }
+
+@keyframes awardCardInPrev {
+  from {
+    opacity: 0;
+    transform: translateX(-24px); } }
+
+/* Prev / count / next, floating at the bottom of the photo. */
+.awardCard__controls {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px;
+  border-radius: 1000px;
+  background: rgba(20, 22, 23, 0.55);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px); }
+  .awardCard__controls .mediaIconButton {
+    width: 36px;
+    height: 36px;
+    border-color: transparent; }
+
+.awardCard__thumbs {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px; }
+  .awardCard__thumbs button {
+    display: block;
+    width: 72px;
+    aspect-ratio: 4 / 3;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #202122;
+    opacity: 0.6;
+    cursor: pointer;
+    transition: opacity 0.3s, border-color 0.3s; }
+    .awardCard__thumbs button:hover {
+      opacity: 1; }
+    .awardCard__thumbs button[aria-current="true"] {
+      border-color: #E68276;
+      opacity: 1; }
+  .awardCard__thumbs img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; }
+
+@media (min-width: 768px) {
+  .awardCard__body {
+    /* Clears the close button. */
+    padding-top: 56px;
+    padding-right: 8px; } }
+
+.awardCard__body .h3 {
+  text-wrap: balance; }
+
+@media (prefers-reduced-motion: reduce) {
+  .awardCard__slide {
+    animation: none; } }
