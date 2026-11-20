@@ -43,7 +43,8 @@ Rules:
 1. Never invent prices, MOQs, or lead times not stated here. Retail products on earthfoam.lk use "Inquire price".
 2. Always call track_order ONLY when the user explicitly provides an order number from their confirmation/invoice. Never suggest or invent real customer order numbers; if asked for an example format, use the placeholder ABC/012/26 and never look up ABC/012/26.
 3. For consumer mattresses, toppers, pillows, or showroom visits, use the verified earthfoam.lk details below and include direct https://earthfoam.lk/... links.
-4. Formatting: Write like a natural, polished chat assistant. NEVER use Markdown headings (#, ##, ###) or horizontal dividers (---). Use short paragraphs, bold labels (**...**), and concise bullet points (- ).
+4. Formatting: Write like a natural, polished chat assistant. NEVER use Markdown headings (#, ##, ###) or horizontal dividers (---). Use short paragraphs, bold labels (**...**), and concise bullet points (- ). Always respond in clean English using standard ASCII/Latin characters (never emit stray CJK/Katakana characters), and write inch measurements clearly (e.g. 10" or 10 inches).
+5. Inquiries & Lead Capture: Whenever a user asks to send an inquiry, requests a quote/price, or asks for sales to contact them, ALWAYS ask them for: (1) their name, (2) either their mobile/phone number or email address (at least one is required so our sales team knows who to contact), and (3) what they are inquiring about. Validate that the email (name@domain.com) or mobile/phone number (7-15 digits) is valid before calling submit_inquiry; if missing or invalid, ask the user to provide a valid mobile number or email. Never invent or guess contact details.
 
 Made With Earthfoam (madewith.earthfoam.com):
 - Natural Dunlop latex foam (zero fillers, zero synthetics) for bedding, furniture, upholstery, footwear.
@@ -54,9 +55,9 @@ Made With Earthfoam (madewith.earthfoam.com):
 - Media Gallery & Awards (/gallery and /gallery?type=awards): features the film "Earthfoam, Certified Quality" and 13 awards (2023-2026) including the 25th, 26th, and 27th Presidential Export Awards, PRISL (2025, 2026), National Chamber of Commerce (2025), CNCI (2026), People's Pinnacle Best Mattress Brand (2024), National Industry Brand Excellence (2024), and National Industry Excellence (2023). Never invent or cite placeholder sample items.
 
 Earthfoam Sri Lanka Retail (https://earthfoam.lk):
-- Organic Mattress (https://earthfoam.lk/products/mattress): 5-layer build (latex base & comfort layer, organic cotton batting, organic wool fire barrier, GOTS cotton cover), widths 36"/42"/48"/60"/72", lengths 72"/75"/78", heights 6"/8"/10".
-- 8 Hybrid Mattresses (https://earthfoam.lk/products/hybrid-mattress): Osaka (4/6/8/10"), Ventura (8" orthopaedic), Brandford (10" medium-soft/firmest coil), Meriden (12" pillow-top), Aurora (14" cool euro-top), Athens Euro Top (16"), Athens Signature (16"), Athens Legacy (18").
-- Organic Mattress Topper (https://earthfoam.lk/products/topper): 4-layer latex/wool/cotton, heights 1" & 2".
+- Organic Mattress (https://earthfoam.lk/products/mattress): 5-layer build (latex base & comfort layer, organic cotton batting, organic wool fire barrier, GOTS cotton cover), widths 36", 42", 48", 60", 72"; lengths 72", 75", 78"; heights 6", 8", 10" (inches).
+- 8 Hybrid Mattresses (https://earthfoam.lk/products/hybrid-mattress): Osaka (4", 6", 8", 10" heights), Ventura (8" height, orthopaedic), Brandford (10" height, medium-soft/firmest coil), Meriden (12" height, pillow-top), Aurora (14" height, cool euro-top), Athens Euro Top (16" height), Athens Signature (16" height), Athens Legacy (18" height).
+- Organic Mattress Topper (https://earthfoam.lk/products/topper): 4-layer latex/wool/cotton, heights 1" and 2" (inches).
 - 4 Natural Latex Pillows (https://earthfoam.lk/products/pillow): Standard 2-Zone (60/70/84x40x15cm), Contour Mono-Zone (60/70x40cm, 12/10cm or 10/8cm, Soft/Medium), Standard Mono-Zone (60x40x12.5cm), Knobby (59x36x13cm).
 - Showroom: No 45, Dharmapala Mawatha, Colombo 03 (open 7 days, 10 AM - 6 PM | info@earthfoam.lk | +94 114 245 245 | https://earthfoam.lk/contact).
 - Trials & Warranties: 100-day mattress/topper trial, 30-day pillow trial, 10-year mattress warranty, 5-year pillow warranty, free delivery to most of Sri Lanka (2 working days dispatch; 4 working days in Colombo).`
@@ -86,7 +87,64 @@ function sendJson(res, statusCode, body) {
   res.end(JSON.stringify(body))
 }
 
-function collectActions(text, tracking) {
+function sanitizeAssistantText(text, userText = '') {
+  let out = `${text || ''}`
+  if (!/[\u3000-\u30ff\u3400-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]/.test(userText)) {
+    out = out
+      .replace(/(\d)\s*[\u3000-\u30ff\u3400-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]+/g, '$1"')
+      .replace(/[\u3000-\u30ff\u3400-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]+/g, '')
+  }
+  return out.trim()
+}
+
+function validateInquiryPayload(payload) {
+  const name = `${payload?.name || ''}`.trim()
+  const email = `${payload?.email || ''}`.trim()
+  const phone = `${payload?.phone || ''}`.trim()
+  const company = `${payload?.company || ''}`.trim()
+  const productOrProject = `${payload?.productOrProject || ''}`.trim()
+  const message = `${payload?.message || ''}`.trim()
+  const inquiryType = payload?.inquiryType === 'retail' ? 'retail' : 'b2b'
+
+  if (!name || name.length < 2) {
+    return { ok: false, error: 'Please provide the visitor name.' }
+  }
+  if (!email && !phone) {
+    return {
+      ok: false,
+      error:
+        'Please provide either a valid email address or a mobile/phone number so our sales team knows who to contact.',
+    }
+  }
+  if (
+    email &&
+    (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) ||
+      /^(test|user|example|none|na|n\/a|unknown|visitor)@|@(example|test|domain|placeholder)\./i.test(email))
+  ) {
+    return { ok: false, error: 'Please enter a valid email address.' }
+  }
+  if (phone) {
+    const digits = phone.replace(/\D/g, '')
+    if (
+      !/^\+?[\d\s().-]{7,20}$/.test(phone) ||
+      digits.length < 7 ||
+      digits.length > 15 ||
+      /^(\d)\1+$/.test(digits)
+    ) {
+      return { ok: false, error: 'Please enter a valid mobile or phone number (7–15 digits).' }
+    }
+  }
+  if (!message || message.length < 3) {
+    return { ok: false, error: 'Please include a brief message about what you are inquiring about.' }
+  }
+
+  return {
+    ok: true,
+    data: { inquiryType, name, company, email, phone, productOrProject, message },
+  }
+}
+
+function collectActions(userText, replyText, tracking) {
   const actions = []
   const seen = new Set()
   const add = (action) => {
@@ -104,54 +162,92 @@ function collectActions(text, tracking) {
     })
   }
 
-  const lower = text.toLowerCase()
-  if (/\b(mattress\w*|bed\w*|organic mattress)\b/.test(lower)) {
+  const userLower = `${userText || ''}`.toLowerCase()
+  const replyLower = `${replyText || ''}`.toLowerCase()
+
+  if (/\b(mattress\w*|bed\w*|sleep\w*|organic mattress)\b/.test(userLower) && !/\bawards?\b/.test(userLower)) {
     add({ label: 'Organic Mattress (earthfoam.lk)', href: EARTHFOAMLK_LINKS.mattress, external: true, kind: 'retail' })
   }
-  if (/\b(hybrid\w*|osaka|ventura|brandford|meriden|aurora|athens)\b/.test(lower)) {
+  if (/\b(hybrid\w*|osaka|ventura|brandford|meriden|aurora|athens)\b/.test(userLower)) {
     add({ label: 'Hybrid Mattresses (earthfoam.lk)', href: EARTHFOAMLK_LINKS.hybridGallery, external: true, kind: 'retail' })
-  }
-  if (/\btopper\w*\b/.test(lower)) {
-    add({ label: 'Mattress Topper (earthfoam.lk)', href: EARTHFOAMLK_LINKS.topper, external: true, kind: 'retail' })
-  }
-  if (/\b(pillow\w*|contour|knobby|2-zone|2 zone)\b/.test(lower)) {
-    add({ label: 'Natural Latex Pillows (earthfoam.lk)', href: EARTHFOAMLK_LINKS.pillowGallery, external: true, kind: 'retail' })
-  }
-  if (/\b(showroom\w*|dharmapala|colombo 03|info@earthfoam\.lk)\b/.test(lower)) {
-    add({ label: 'Colombo Showroom (earthfoam.lk)', href: EARTHFOAMLK_LINKS.contact, external: true, kind: 'retail' })
-  }
-  if (/\b(certif\w*|certs?|standards?|gols|gots|ocs|organic content standard|fair\s+for\s+life|for\s+life|iso(?:\s*\d+)?|fsc|oeko[-\s]*tex|eco[-\s]*institut|wrap)\b/.test(lower)) {
-    const certMatchers = {
-      GOLS: /\bgols\b/,
-      GOTS: /\bgots\b/,
-      'Organic Content Standard': /\b(ocs|organic content standard)\b/,
-      'Fair for Life': /\bfair\s+for\s+life\b/,
-      'For Life': /(?<!fair\s)\bfor\s+life\b/,
-      'ISO 14001': /\biso\s*14001\b/,
-      FSC: /\bfsc\b/,
-      'Oeko-Tex': /\boeko[-\s]*tex\b/,
-      'Eco-Institut': /\beco[-\s]*institut\b/,
-      'ISO 9001': /\biso\s*9001\b/,
-      WRAP: /\bwrap\b/,
-    }
-    const includeAllCerts = /\b(all\s+(?:9|11)|certif\w*|standards?)\b/.test(lower)
-    for (const cert of certifications) {
-      const matcher = certMatchers[cert.label]
-      if (includeAllCerts || (matcher && matcher.test(lower))) {
-        add({ label: cert.label, href: cert.href, external: true, kind: 'pdf' })
+    const hybridScope = `${userLower}\n${replyLower}`
+    for (const [model, url] of Object.entries(EARTHFOAMLK_LINKS.hybridModels)) {
+      if (hybridScope.includes(model.replace(/-/g, ' ')) || hybridScope.includes(model)) {
+        add({
+          label: `${model.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())} (earthfoam.lk)`,
+          href: url,
+          external: true,
+          kind: 'retail',
+        })
       }
     }
   }
-  if (/\b(fair\s+for\s+life|development fund|fair trade program|323)\b/.test(lower)) {
+  if (/\btopper\w*\b/.test(userLower)) {
+    add({ label: 'Mattress Topper (earthfoam.lk)', href: EARTHFOAMLK_LINKS.topper, external: true, kind: 'retail' })
+  }
+  if (/\b(pillow\w*|contour|knobby|2-zone|2 zone)\b/.test(userLower)) {
+    add({ label: 'Natural Latex Pillows (earthfoam.lk)', href: EARTHFOAMLK_LINKS.pillowGallery, external: true, kind: 'retail' })
+  }
+  if (/\b(showroom\w*|dharmapala|colombo|store|visit|info@earthfoam\.lk)\b/.test(userLower)) {
+    add({ label: 'Colombo Showroom (earthfoam.lk)', href: EARTHFOAMLK_LINKS.contact, external: true, kind: 'retail' })
+  }
+
+  const wantsCertProof = /\b(certif\w*|certs?|pdfs?|standard\w*|downloads?|compliance)\b/.test(userLower)
+  const certMatchers = {
+    GOLS: /\bgols\b/,
+    GOTS: /\bgots\b/,
+    'Organic Content Standard': /\b(ocs|organic content standard)\b/,
+    FSC: /\bfsc\b/,
+    'Oeko-Tex': /\boeko[-\s]*tex\b/,
+    'Eco-Institut': /\beco[-\s]*institut\b/,
+    WRAP: /\bwrap\b/,
+  }
+  const hasGenericIso = /\biso\b/.test(userLower)
+  const hasIso9001 = /\biso\s*9001\b/.test(userLower)
+  const hasIso14001 = /\biso\s*14001\b/.test(userLower)
+
+  const matchedCerts = certifications.filter((cert) => {
+    if (cert.label === 'Fair for Life') {
+      return /\bfair\s+for\s+life\b/.test(userLower) && wantsCertProof
+    }
+    if (cert.label === 'For Life') {
+      return /(?<!fair\s)\bfor\s+life\b/.test(userLower) && wantsCertProof
+    }
+    if (cert.label === 'ISO 14001') {
+      return hasIso14001 || (hasGenericIso && !hasIso9001)
+    }
+    if (cert.label === 'ISO 9001') {
+      return hasIso9001 || (hasGenericIso && !hasIso14001)
+    }
+    const matcher = certMatchers[cert.label]
+    return Boolean(matcher && matcher.test(userLower))
+  })
+
+  const asksAllCerts =
+    /\b(all\s+(?:9|11)|certifications?|certificates?|certs?|compliance)\b/.test(userLower) ||
+    (/\b(certified|standards?)\b/.test(userLower) &&
+      !/\b(pillow\w*|mattress\w*|topper\w*|hybrid\w*|award\w*|video\w*|film)\b/.test(userLower))
+
+  if (matchedCerts.length > 0 && !/\ball\b/.test(userLower)) {
+    for (const cert of matchedCerts) {
+      add({ label: cert.label, href: cert.href, external: true, kind: 'pdf' })
+    }
+  } else if (asksAllCerts) {
+    for (const cert of certifications) {
+      add({ label: cert.label, href: cert.href, external: true, kind: 'pdf' })
+    }
+  }
+
+  if (/\b(fair\s+for\s+life|fair\s*trade|development fund|323|farm\w*|forest\w*|tapper\w*|project\w*|community|healthcare)\b/.test(userLower)) {
     add({ label: 'Fair for Life', href: '/fair-for-life' })
   }
-  if (/\b(awards?|export awards?|prisl|cnci|pinnacle|excellence|gallery)\b/.test(lower)) {
+  if (/\b(awards?|export awards?|prisl|cnci|pinnacle|excellence)\b/.test(userLower)) {
     add({ label: 'Awards & Gallery', href: '/gallery?type=awards' })
   }
-  if (/\b(video|film|certified quality|media|gallery)\b/.test(lower)) {
+  if (/\b(awards?|video\w*|film|certified quality|media|gallery)\b/.test(userLower)) {
     add({ label: 'Media Gallery', href: '/gallery' })
   }
-  if (/\b(wholesale|white label|white-label|oem|working with us|seal|inquir\w*|quot\w*|collab\w*)\b/.test(lower)) {
+  if (/\b(wholesale|white label|white-label|oem|working with us|working together|seal|inquir\w*|quot\w*|collab\w*|partner\w*|b2b|pric\w*)\b/.test(userLower)) {
     add({ label: 'Send an inquiry', kind: 'inquiry' })
   }
 
@@ -289,7 +385,7 @@ async function buildGroundedReply(userMessage, lookupOrder, logger) {
   if (/\b(wholesale|white label|white-label|oem|collab\w*|seal|licens\w*|sourc\w*|quot\w*|inquir\w*|contact)\b/.test(q)) {
     return {
       reply:
-        'Partner with our Horana, Sri Lanka factory via **Wholesale Latex Foam** (custom sizes, densities including hard rubber, adjustable molds, *Made with Earthfoam* seal licensing), **Product Collaboration**, or **OEM / White-Label Manufacturing**. Click **Send an inquiry** below to reach `foamfactory@earthfoam.com`.',
+        'Partner with our Horana, Sri Lanka factory via **Wholesale Latex Foam** (custom sizes, densities including hard rubber, adjustable molds, *Made with Earthfoam* seal licensing), **Product Collaboration**, or **OEM / White-Label Manufacturing**. Share your **name**, **either your mobile number or email address**, and **what you need** (or click **Send an inquiry** below) so our sales team at `foamfactory@earthfoam.com` can contact you.',
       actions: [
         { label: 'Send an inquiry', kind: 'inquiry' },
         { label: 'Working With Us', href: '/#working-together', kind: 'link' },
@@ -352,17 +448,48 @@ export default function chatbotSample(env = {}) {
                 parts: [{ text: `${m.content}`.slice(0, 1200) }],
               }))
               const tools = [{
-                functionDeclarations: [{
-                  name: 'track_order',
-                  description: 'Look up live factory and shipping status for an Earthfoam order number.',
-                  parameters: {
-                    type: 'OBJECT',
-                    properties: { orderNumber: { type: 'STRING' } },
-                    required: ['orderNumber'],
+                functionDeclarations: [
+                  {
+                    name: 'track_order',
+                    description: 'Look up live factory and shipping status for an Earthfoam order number.',
+                    parameters: {
+                      type: 'OBJECT',
+                      properties: { orderNumber: { type: 'STRING' } },
+                      required: ['orderNumber'],
+                    },
                   },
-                }],
+                  {
+                    name: 'submit_inquiry',
+                    description:
+                      'Submit a B2B wholesale/white-label inquiry (to foamfactory@earthfoam.com) or retail mattress/pillow inquiry (to info@earthfoam.lk) ONLY after collecting the visitor name, at least one valid contact method (either email or mobile/phone number), and their message. Ask for a valid mobile number or email first if missing or invalid.',
+                    parameters: {
+                      type: 'OBJECT',
+                      properties: {
+                        inquiryType: {
+                          type: 'STRING',
+                          enum: ['b2b', 'retail'],
+                          description: 'Use "b2b" for wholesale/OEM/seal licensing or "retail" for mattresses/toppers/pillows/showroom.',
+                        },
+                        name: { type: 'STRING', description: 'Visitor full name' },
+                        email: {
+                          type: 'STRING',
+                          description: 'Visitor email address (required if mobile/phone is not provided)',
+                        },
+                        phone: {
+                          type: 'STRING',
+                          description: 'Visitor mobile or phone number, 7-15 digits (required if email is not provided)',
+                        },
+                        company: { type: 'STRING', description: 'Company name (optional)' },
+                        productOrProject: { type: 'STRING', description: 'Product or project interest' },
+                        message: { type: 'STRING', description: 'Summary of requirements or question' },
+                      },
+                      required: ['inquiryType', 'name', 'message'],
+                    },
+                  },
+                ],
               }]
               let trackingData = null
+              let inquirySubmitted = false
               let text = ''
               for (let step = 0; step < 3; step += 1) {
                 const geminiRes = await fetch(endpoint, {
@@ -381,7 +508,7 @@ export default function chatbotSample(env = {}) {
                 const parts = modelContent?.parts || []
                 const calls = parts.filter((p) => p.functionCall)
                 if (!calls.length) {
-                  text = parts.map((p) => p.text || '').join('\n').trim()
+                  text = sanitizeAssistantText(parts.map((p) => p.text || '').join('\n'), lastUser.content)
                   break
                 }
                 contents.push(modelContent)
@@ -408,6 +535,33 @@ export default function chatbotSample(env = {}) {
                         },
                       })
                     }
+                  } else if (p.functionCall.name === 'submit_inquiry') {
+                    const validation = validateInquiryPayload(p.functionCall.args || {})
+                    if (!validation.ok) {
+                      fnResponses.push({
+                        functionResponse: {
+                          name: 'submit_inquiry',
+                          response: { ok: false, error: validation.error },
+                        },
+                      })
+                    } else {
+                      const { inquiryType, name, email, phone } = validation.data
+                      const recipient = inquiryType === 'retail' ? 'info@earthfoam.lk' : 'foamfactory@earthfoam.com'
+                      const contact = [email, phone].filter(Boolean).join(' / ')
+                      server.config.logger.info(`[chatbot-sample] Dev in-chat inquiry captured for ${recipient} from ${name} (${contact})`)
+                      inquirySubmitted = true
+                      fnResponses.push({
+                        functionResponse: {
+                          name: 'submit_inquiry',
+                          response: {
+                            ok: true,
+                            recipient,
+                            contact,
+                            message: `Thank you, ${name}. In production this inquiry goes directly to ${recipient} and our sales team will contact you via ${contact}.`,
+                          },
+                        },
+                      })
+                    }
                   }
                 }
                 contents.push({ role: 'user', parts: fnResponses })
@@ -415,8 +569,9 @@ export default function chatbotSample(env = {}) {
               if (text) {
                 return sendJson(res, 200, {
                   reply: text,
-                  actions: collectActions(`${lastUser.content}\n${text}`, trackingData),
+                  actions: collectActions(lastUser.content, text, trackingData),
                   tracking: trackingData || undefined,
+                  inquirySubmitted: inquirySubmitted || undefined,
                   mode: 'gemini',
                 })
               }
@@ -438,18 +593,18 @@ export default function chatbotSample(env = {}) {
         }
         try {
           const body = await readJsonBody(req)
-          const name = `${body.name || ''}`.trim()
-          const email = `${body.email || ''}`.trim()
-          const message = `${body.message || ''}`.trim()
-          if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !message) {
-            return sendJson(res, 400, { message: 'Please provide your name, a valid email, and a message.' })
+          const validation = validateInquiryPayload(body)
+          if (!validation.ok) {
+            return sendJson(res, 400, { message: validation.error })
           }
-          const recipient = body.inquiryType === 'retail' ? 'info@earthfoam.lk' : 'foamfactory@earthfoam.com'
-          server.config.logger.info(`[chatbot-sample] Dev inquiry captured for ${recipient} from ${name} <${email}>`)
+          const { inquiryType, name, email, phone } = validation.data
+          const recipient = inquiryType === 'retail' ? 'info@earthfoam.lk' : 'foamfactory@earthfoam.com'
+          const contact = [email, phone].filter(Boolean).join(' / ')
+          server.config.logger.info(`[chatbot-sample] Dev inquiry captured for ${recipient} from ${name} (${contact})`)
           return sendJson(res, 200, {
             ok: true,
             recipient,
-            message: `Thank you, ${name}. In production this inquiry goes directly to ${recipient} (captured in dev log).`,
+            message: `Thank you, ${name}. In production this inquiry goes directly to ${recipient} (captured in dev log; contact: ${contact}).`,
           })
         } catch (err) {
           return sendJson(res, 400, { message: err.message || 'Invalid inquiry.' })

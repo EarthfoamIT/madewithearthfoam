@@ -45,7 +45,7 @@ function prefersReducedMotion() {
 
 function nextRevealIndex(content, current) {
   let next = Math.min(content.length, current + REVEAL_STEP_CHARS)
-  const linkRegex = /\[[^\]]+\]\([^)]+\)/g
+  const linkRegex = /(\*\*\[[^\]]+\]\s*\((?:[^()\s]|\([^()\s]*\))+\)\*\*|\[[^\]]+\]\s*\((?:[^()\s]|\([^()\s]*\))+\))/g
   for (const match of content.matchAll(linkRegex)) {
     const start = match.index
     const end = start + match[0].length
@@ -74,23 +74,29 @@ function isSafeHref(href) {
   )
 }
 
-function stripDanglingRevealTokens(text) {
+function stripStrayCjkTokens(text) {
   return `${text || ''}`
+    .replace(/(\d)\s*[\u3000-\u30ff\u3400-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]+/g, '$1"')
+    .replace(/[\u3000-\u30ff\u3400-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]+/g, '')
+}
+
+function stripDanglingRevealTokens(text) {
+  return stripStrayCjkTokens(text)
     .replace(/\n[ \t]*[#*_-]{1,6}[ \t]*$/g, '')
     .replace(/(?:\*\*|`|#|---)$/, '')
 }
 
 function renderInlineTokens(text, onNavigateInternal) {
-  const tokenRegex = /(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`|https?:\/\/[^\s)]+)/g
+  const tokenRegex = /(\[[^\]]+\]\s*\((?:[^()\s]|\([^()\s]*\))+\)|\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`|https?:\/\/[^\s)]+)/g
   const parts = text.split(tokenRegex)
 
   return parts.map((part, idx) => {
     if (!part) return null
     if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-      return <strong key={idx}>{part.slice(2, -2)}</strong>
+      return <strong key={idx}>{renderInlineTokens(part.slice(2, -2), onNavigateInternal)}</strong>
     }
     if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
-      return <em key={idx}>{part.slice(1, -1)}</em>
+      return <em key={idx}>{renderInlineTokens(part.slice(1, -1), onNavigateInternal)}</em>
     }
     if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
       return (
@@ -116,10 +122,11 @@ function renderInlineTokens(text, onNavigateInternal) {
         </span>
       )
     }
-    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
+    const linkMatch = part.match(/^\[([^\]]+)\]\s*\(((?:[^()\s]|\([^()\s]*\))+)\)$/)
     if (linkMatch) {
       const [, label, href] = linkMatch
-      if (!isSafeHref(href)) return label
+      const cleanLabel = label.replace(/^\*\*|\*\*$/g, '').replace(/^\*|\*$/g, '')
+      if (!isSafeHref(href)) return cleanLabel
       if (href.startsWith('/') && !href.startsWith('/assets/')) {
         return (
           <Link
@@ -128,7 +135,7 @@ function renderInlineTokens(text, onNavigateInternal) {
             className="chatbot__inlineLink"
             onClick={onNavigateInternal}
           >
-            {label}
+            {cleanLabel}
           </Link>
         )
       }
@@ -140,7 +147,7 @@ function renderInlineTokens(text, onNavigateInternal) {
           rel="noopener noreferrer"
           className="chatbot__inlineLink"
         >
-          {label}
+          {cleanLabel}
         </a>
       )
     }
@@ -350,6 +357,15 @@ function ActionPills({ actions, onOpenInquiry, onNavigateInternal }) {
   )
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+function isValidPhone(value) {
+  const trimmed = `${value || ''}`.trim()
+  if (!/^\+?[\d\s().-]{7,20}$/.test(trimmed)) return false
+  const digits = trimmed.replace(/\D/g, '')
+  return digits.length >= 7 && digits.length <= 15 && !/^(\d)\1+$/.test(digits)
+}
+
 function InquiryForm({ onClose, onSubmitted }) {
   const [inquiryType, setInquiryType] = useState('b2b')
   const [name, setName] = useState('')
@@ -364,17 +380,44 @@ function InquiryForm({ onClose, onSubmitted }) {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+
+    const cleanName = name.trim()
+    const cleanEmail = email.trim()
+    const cleanPhone = phone.trim()
+    const cleanMsg = message.trim()
+
+    if (cleanName.length < 2) {
+      setError('Please enter your name.')
+      return
+    }
+    if (!cleanEmail && !cleanPhone) {
+      setError('Please provide either your email address or mobile number so our sales team can contact you.')
+      return
+    }
+    if (cleanEmail && !EMAIL_REGEX.test(cleanEmail)) {
+      setError('Please enter a valid email address (e.g. name@example.com).')
+      return
+    }
+    if (cleanPhone && !isValidPhone(cleanPhone)) {
+      setError('Please enter a valid mobile or phone number (7–15 digits).')
+      return
+    }
+    if (cleanMsg.length < 3) {
+      setError('Please include a brief message about your inquiry.')
+      return
+    }
+
     setBusy(true)
 
     try {
       const res = await sendChatInquiry({
         inquiryType,
-        name,
-        company,
-        email,
-        phone,
-        productOrProject,
-        message,
+        name: cleanName,
+        company: company.trim(),
+        email: cleanEmail,
+        phone: cleanPhone,
+        productOrProject: productOrProject.trim(),
+        message: cleanMsg,
       })
       onSubmitted(res)
     } catch (err) {
@@ -437,10 +480,9 @@ function InquiryForm({ onClose, onSubmitted }) {
         <input
           className="chatbot__field"
           type="email"
-          placeholder="Email"
+          placeholder="Email (or mobile below)"
           aria-label="Email"
           autoComplete="email"
-          required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -456,8 +498,8 @@ function InquiryForm({ onClose, onSubmitted }) {
         <input
           className="chatbot__field"
           type="tel"
-          placeholder="Phone (optional)"
-          aria-label="Phone"
+          placeholder="Mobile / Phone (or email above)"
+          aria-label="Mobile or Phone"
           autoComplete="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
@@ -768,7 +810,9 @@ export default function ChatBot() {
               const isRevealing = msg.id === revealingId
               const visibleText = isRevealing
                 ? stripDanglingRevealTokens(msg.content.slice(0, revealedChars))
-                : msg.content
+                : msg.role === 'assistant'
+                  ? stripStrayCjkTokens(msg.content)
+                  : msg.content
 
               return (
                 <div
