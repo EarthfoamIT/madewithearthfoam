@@ -86,7 +86,7 @@ function sendJson(res, statusCode, body) {
   res.end(JSON.stringify(body))
 }
 
-function collectActions(text, tracking) {
+function collectActions(userText, replyText, tracking) {
   const actions = []
   const seen = new Set()
   const add = (action) => {
@@ -104,54 +104,92 @@ function collectActions(text, tracking) {
     })
   }
 
-  const lower = text.toLowerCase()
-  if (/\b(mattress\w*|bed\w*|organic mattress)\b/.test(lower)) {
+  const userLower = `${userText || ''}`.toLowerCase()
+  const replyLower = `${replyText || ''}`.toLowerCase()
+
+  if (/\b(mattress\w*|bed\w*|sleep\w*|organic mattress)\b/.test(userLower) && !/\bawards?\b/.test(userLower)) {
     add({ label: 'Organic Mattress (earthfoam.lk)', href: EARTHFOAMLK_LINKS.mattress, external: true, kind: 'retail' })
   }
-  if (/\b(hybrid\w*|osaka|ventura|brandford|meriden|aurora|athens)\b/.test(lower)) {
+  if (/\b(hybrid\w*|osaka|ventura|brandford|meriden|aurora|athens)\b/.test(userLower)) {
     add({ label: 'Hybrid Mattresses (earthfoam.lk)', href: EARTHFOAMLK_LINKS.hybridGallery, external: true, kind: 'retail' })
-  }
-  if (/\btopper\w*\b/.test(lower)) {
-    add({ label: 'Mattress Topper (earthfoam.lk)', href: EARTHFOAMLK_LINKS.topper, external: true, kind: 'retail' })
-  }
-  if (/\b(pillow\w*|contour|knobby|2-zone|2 zone)\b/.test(lower)) {
-    add({ label: 'Natural Latex Pillows (earthfoam.lk)', href: EARTHFOAMLK_LINKS.pillowGallery, external: true, kind: 'retail' })
-  }
-  if (/\b(showroom\w*|dharmapala|colombo 03|info@earthfoam\.lk)\b/.test(lower)) {
-    add({ label: 'Colombo Showroom (earthfoam.lk)', href: EARTHFOAMLK_LINKS.contact, external: true, kind: 'retail' })
-  }
-  if (/\b(certif\w*|certs?|standards?|gols|gots|ocs|organic content standard|fair\s+for\s+life|for\s+life|iso(?:\s*\d+)?|fsc|oeko[-\s]*tex|eco[-\s]*institut|wrap)\b/.test(lower)) {
-    const certMatchers = {
-      GOLS: /\bgols\b/,
-      GOTS: /\bgots\b/,
-      'Organic Content Standard': /\b(ocs|organic content standard)\b/,
-      'Fair for Life': /\bfair\s+for\s+life\b/,
-      'For Life': /(?<!fair\s)\bfor\s+life\b/,
-      'ISO 14001': /\biso\s*14001\b/,
-      FSC: /\bfsc\b/,
-      'Oeko-Tex': /\boeko[-\s]*tex\b/,
-      'Eco-Institut': /\beco[-\s]*institut\b/,
-      'ISO 9001': /\biso\s*9001\b/,
-      WRAP: /\bwrap\b/,
-    }
-    const includeAllCerts = /\b(all\s+(?:9|11)|certif\w*|standards?)\b/.test(lower)
-    for (const cert of certifications) {
-      const matcher = certMatchers[cert.label]
-      if (includeAllCerts || (matcher && matcher.test(lower))) {
-        add({ label: cert.label, href: cert.href, external: true, kind: 'pdf' })
+    const hybridScope = `${userLower}\n${replyLower}`
+    for (const [model, url] of Object.entries(EARTHFOAMLK_LINKS.hybridModels)) {
+      if (hybridScope.includes(model.replace(/-/g, ' ')) || hybridScope.includes(model)) {
+        add({
+          label: `${model.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())} (earthfoam.lk)`,
+          href: url,
+          external: true,
+          kind: 'retail',
+        })
       }
     }
   }
-  if (/\b(fair\s+for\s+life|development fund|fair trade program|323)\b/.test(lower)) {
+  if (/\btopper\w*\b/.test(userLower)) {
+    add({ label: 'Mattress Topper (earthfoam.lk)', href: EARTHFOAMLK_LINKS.topper, external: true, kind: 'retail' })
+  }
+  if (/\b(pillow\w*|contour|knobby|2-zone|2 zone)\b/.test(userLower)) {
+    add({ label: 'Natural Latex Pillows (earthfoam.lk)', href: EARTHFOAMLK_LINKS.pillowGallery, external: true, kind: 'retail' })
+  }
+  if (/\b(showroom\w*|dharmapala|colombo|store|visit|info@earthfoam\.lk)\b/.test(userLower)) {
+    add({ label: 'Colombo Showroom (earthfoam.lk)', href: EARTHFOAMLK_LINKS.contact, external: true, kind: 'retail' })
+  }
+
+  const wantsCertProof = /\b(certif\w*|certs?|pdfs?|standard\w*|downloads?|compliance)\b/.test(userLower)
+  const certMatchers = {
+    GOLS: /\bgols\b/,
+    GOTS: /\bgots\b/,
+    'Organic Content Standard': /\b(ocs|organic content standard)\b/,
+    FSC: /\bfsc\b/,
+    'Oeko-Tex': /\boeko[-\s]*tex\b/,
+    'Eco-Institut': /\beco[-\s]*institut\b/,
+    WRAP: /\bwrap\b/,
+  }
+  const hasGenericIso = /\biso\b/.test(userLower)
+  const hasIso9001 = /\biso\s*9001\b/.test(userLower)
+  const hasIso14001 = /\biso\s*14001\b/.test(userLower)
+
+  const matchedCerts = certifications.filter((cert) => {
+    if (cert.label === 'Fair for Life') {
+      return /\bfair\s+for\s+life\b/.test(userLower) && wantsCertProof
+    }
+    if (cert.label === 'For Life') {
+      return /(?<!fair\s)\bfor\s+life\b/.test(userLower) && wantsCertProof
+    }
+    if (cert.label === 'ISO 14001') {
+      return hasIso14001 || (hasGenericIso && !hasIso9001)
+    }
+    if (cert.label === 'ISO 9001') {
+      return hasIso9001 || (hasGenericIso && !hasIso14001)
+    }
+    const matcher = certMatchers[cert.label]
+    return Boolean(matcher && matcher.test(userLower))
+  })
+
+  const asksAllCerts =
+    /\b(all\s+(?:9|11)|certifications?|certificates?|certs?|compliance)\b/.test(userLower) ||
+    (/\b(certified|standards?)\b/.test(userLower) &&
+      !/\b(pillow\w*|mattress\w*|topper\w*|hybrid\w*|award\w*|video\w*|film)\b/.test(userLower))
+
+  if (matchedCerts.length > 0 && !/\ball\b/.test(userLower)) {
+    for (const cert of matchedCerts) {
+      add({ label: cert.label, href: cert.href, external: true, kind: 'pdf' })
+    }
+  } else if (asksAllCerts) {
+    for (const cert of certifications) {
+      add({ label: cert.label, href: cert.href, external: true, kind: 'pdf' })
+    }
+  }
+
+  if (/\b(fair\s+for\s+life|fair\s*trade|development fund|323|farm\w*|forest\w*|tapper\w*|project\w*|community|healthcare)\b/.test(userLower)) {
     add({ label: 'Fair for Life', href: '/fair-for-life' })
   }
-  if (/\b(awards?|export awards?|prisl|cnci|pinnacle|excellence|gallery)\b/.test(lower)) {
+  if (/\b(awards?|export awards?|prisl|cnci|pinnacle|excellence)\b/.test(userLower)) {
     add({ label: 'Awards & Gallery', href: '/gallery?type=awards' })
   }
-  if (/\b(video|film|certified quality|media|gallery)\b/.test(lower)) {
+  if (/\b(awards?|video\w*|film|certified quality|media|gallery)\b/.test(userLower)) {
     add({ label: 'Media Gallery', href: '/gallery' })
   }
-  if (/\b(wholesale|white label|white-label|oem|working with us|seal|inquir\w*|quot\w*|collab\w*)\b/.test(lower)) {
+  if (/\b(wholesale|white label|white-label|oem|working with us|working together|seal|inquir\w*|quot\w*|collab\w*|partner\w*|b2b|pric\w*)\b/.test(userLower)) {
     add({ label: 'Send an inquiry', kind: 'inquiry' })
   }
 
@@ -415,7 +453,7 @@ export default function chatbotSample(env = {}) {
               if (text) {
                 return sendJson(res, 200, {
                   reply: text,
-                  actions: collectActions(`${lastUser.content}\n${text}`, trackingData),
+                  actions: collectActions(lastUser.content, text, trackingData),
                   tracking: trackingData || undefined,
                   mode: 'gemini',
                 })
