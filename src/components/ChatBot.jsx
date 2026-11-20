@@ -1,11 +1,12 @@
 import {
+  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
+  BotMessageSquare,
   ExternalLink,
   FileText,
   LoaderCircle,
   Mail,
-  MessageSquare,
   RotateCcw,
   SendHorizontal,
   X,
@@ -60,7 +61,7 @@ const WELCOME_MESSAGE = {
   id: 'welcome',
   role: 'assistant',
   content:
-    `Hello — ask me about our Sri Lankan latex foam factory, organic & fair trade certifications, consumer mattresses and pillows on **earthfoam.lk**, or share your order number (e.g. \`${ORDER_NUMBER_EXAMPLE}\`) to check live shipping status.`,
+    `Hi. Ask me about our latex foam, the farms and factory behind it, or our certificates.\n\nLooking for a mattress or pillow? I’ll point you to **earthfoam.lk**. Have an order number like \`${ORDER_NUMBER_EXAMPLE}\`? I’ll check where it is.`,
   actions: [],
 }
 
@@ -92,7 +93,11 @@ function renderInlineTokens(text, onNavigateInternal) {
       return <em key={idx}>{part.slice(1, -1)}</em>
     }
     if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
-      return <code key={idx}>{part.slice(1, -1)}</code>
+      return (
+        <span key={idx} className="chatbot__code">
+          {part.slice(1, -1)}
+        </span>
+      )
     }
     if (/^https?:\/\/[^\s)]+$/.test(part)) {
       const cleanUrl = part.replace(/[.,;!?]+$/, '')
@@ -383,21 +388,21 @@ function InquiryForm({ onClose, onSubmitted }) {
     <form className="chatbot__inquiry" onSubmit={handleSubmit}>
       <div className="chatbot__inquiryHead">
         <div>
-          <p className="eyebrow-sm color-sunset">Direct Inquiry</p>
-          <p className="text-12 color-gray7">
+          <p className="eyebrow-sm color-sunset">Send an inquiry</p>
+          <p className="chatbot__inquiryTo">
             {inquiryType === 'b2b'
-              ? 'Sent to foamfactory@earthfoam.com'
-              : 'Sent to info@earthfoam.lk'}
+              ? 'Goes to foamfactory@earthfoam.com'
+              : 'Goes to info@earthfoam.lk'}
           </p>
         </div>
         <button
           type="button"
           className="chatbot__iconBtn"
           onClick={onClose}
-          aria-label="Close inquiry form"
+          aria-label="Back to chat"
         >
-          <X size={14} strokeWidth={1.75} aria-hidden="true" />
-          <span>Back</span>
+          <ArrowLeft size={14} strokeWidth={1.75} aria-hidden="true" />
+          <span>Chat</span>
         </button>
       </div>
 
@@ -407,14 +412,14 @@ function InquiryForm({ onClose, onSubmitted }) {
           className={`chatbot__typeBtn${inquiryType === 'b2b' ? ' is-active' : ''}`}
           onClick={() => setInquiryType('b2b')}
         >
-          B2B / Wholesale
+          Wholesale and brands
         </button>
         <button
           type="button"
           className={`chatbot__typeBtn${inquiryType === 'retail' ? ' is-active' : ''}`}
           onClick={() => setInquiryType('retail')}
         >
-          Mattresses / earthfoam.lk
+          Mattresses and pillows
         </button>
       </div>
 
@@ -422,7 +427,9 @@ function InquiryForm({ onClose, onSubmitted }) {
         <input
           className="chatbot__field"
           type="text"
-          placeholder="Your name *"
+          placeholder="Name"
+          aria-label="Name"
+          autoComplete="name"
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -430,7 +437,9 @@ function InquiryForm({ onClose, onSubmitted }) {
         <input
           className="chatbot__field"
           type="email"
-          placeholder="Email address *"
+          placeholder="Email"
+          aria-label="Email"
+          autoComplete="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -438,7 +447,9 @@ function InquiryForm({ onClose, onSubmitted }) {
         <input
           className="chatbot__field"
           type="text"
-          placeholder={inquiryType === 'b2b' ? 'Company name' : 'City (e.g. Colombo)'}
+          placeholder={inquiryType === 'b2b' ? 'Company (optional)' : 'City (optional)'}
+          aria-label={inquiryType === 'b2b' ? 'Company' : 'City'}
+          autoComplete={inquiryType === 'b2b' ? 'organization' : 'address-level2'}
           value={company}
           onChange={(e) => setCompany(e.target.value)}
         />
@@ -446,26 +457,30 @@ function InquiryForm({ onClose, onSubmitted }) {
           className="chatbot__field"
           type="tel"
           placeholder="Phone (optional)"
+          aria-label="Phone"
+          autoComplete="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
         />
       </div>
 
-      <div className="chatbot__fieldGrid mt-1">
+      <div className="chatbot__fieldGrid">
         <input
           className="chatbot__field"
           type="text"
           placeholder={
             inquiryType === 'b2b'
-              ? 'Interest (Wholesale foam, White-label, Collab, Seal license)'
-              : 'Product (Organic Mattress, Hybrid, Topper, Pillow)'
+              ? 'Interested in (foam, white label, the seal…)'
+              : 'Product (mattress, topper, pillow…)'
           }
+          aria-label={inquiryType === 'b2b' ? 'Interested in' : 'Product'}
           value={productOrProject}
           onChange={(e) => setProductOrProject(e.target.value)}
         />
         <textarea
           className="chatbot__field"
-          placeholder="Tell us what you need (sizes, quantities, questions) *"
+          placeholder="What do you need? Sizes, quantities, questions"
+          aria-label="Message"
           required
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -474,7 +489,7 @@ function InquiryForm({ onClose, onSubmitted }) {
 
       {error && <p className="chatbot__inquiryError">{error}</p>}
 
-      <button type="submit" className="button chatbot__submitBtn" disabled={busy}>
+      <button type="submit" className="button button--white chatbot__submitBtn" disabled={busy}>
         {busy ? (
           <>
             <LoaderCircle size={15} strokeWidth={1.75} className="chatbot__spin" aria-hidden="true" />
@@ -502,6 +517,7 @@ export default function ChatBot() {
   const [revealedChars, setRevealedChars] = useState(0)
 
   const dialogTitleId = useId()
+  const panelRef = useRef(null)
   const listRef = useRef(null)
   const inputRef = useRef(null)
   const abortRef = useRef(null)
@@ -519,10 +535,40 @@ export default function ChatBot() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [open])
 
+  // Focus the input on open, except on phones, where that would pop the
+  // keyboard up over the welcome message straight away.
   useEffect(() => {
-    if (!open) return
+    if (!open || inquiryOpen || window.matchMedia('(max-width: 767px)').matches) return
     const timer = window.setTimeout(() => inputRef.current?.focus(), 60)
     return () => window.clearTimeout(timer)
+  }, [open, inquiryOpen])
+
+  // On phones the panel fills the screen, so stop the page scrolling under it.
+  useEffect(() => {
+    if (!open || !window.matchMedia('(max-width: 767px)').matches) return
+    document.body.classList.add('noscroll')
+    return () => document.body.classList.remove('noscroll')
+  }, [open])
+
+  // When the on-screen keyboard opens, phones shrink only the *visible* area
+  // and scroll the page up under it, which pushed the panel's header off the
+  // top. Pin the panel to the visible area instead (see .chatbot__panel).
+  useEffect(() => {
+    const vv = window.visualViewport
+    const panel = panelRef.current
+    if (!open || !vv || !panel) return
+
+    const fit = () => {
+      panel.style.setProperty('--cb-vv-top', `${vv.offsetTop}px`)
+      panel.style.setProperty('--cb-vv-height', `${vv.height}px`)
+    }
+    fit()
+    vv.addEventListener('resize', fit)
+    vv.addEventListener('scroll', fit)
+    return () => {
+      vv.removeEventListener('resize', fit)
+      vv.removeEventListener('scroll', fit)
+    }
   }, [open])
 
   useEffect(() => {
@@ -654,16 +700,16 @@ export default function ChatBot() {
           type="button"
           className="button chatbot__launcher"
           onClick={() => setOpen(true)}
-          aria-label="Open Earthfoam AI Assistant"
+          aria-label="Ask Earthfoam"
+          title="Ask Earthfoam"
         >
-          <span className="chatbot__dot" aria-hidden="true" />
-          <MessageSquare size={17} strokeWidth={1.75} aria-hidden="true" />
-          <span>Ask Earthfoam</span>
+          <BotMessageSquare size={24} strokeWidth={1.5} aria-hidden="true" />
         </button>
       )}
 
       {open && (
         <section
+          ref={panelRef}
           className="chatbot__panel"
           role="dialog"
           aria-modal="false"
@@ -674,13 +720,11 @@ export default function ChatBot() {
               <span className="chatbot__logoWrap">
                 <img src={monogram} alt="" width="18" height="19" />
               </span>
-              <div>
+              <div className="chatbot__brandText">
                 <h2 id={dialogTitleId} className="chatbot__title">
-                  Earthfoam Assistant
+                  Ask Earthfoam
                 </h2>
-                <p className="chatbot__subtitle">
-                  Orders · Factory & Certs · earthfoam.lk
-                </p>
+                <p className="chatbot__subtitle">Foam, certificates and orders</p>
               </div>
             </div>
 
@@ -689,7 +733,7 @@ export default function ChatBot() {
                 type="button"
                 className={`chatbot__iconBtn${inquiryOpen ? ' chatbot__iconBtn--active' : ''}`}
                 onClick={() => setInquiryOpen((v) => !v)}
-                title="Send an inquiry"
+                aria-pressed={inquiryOpen}
               >
                 <Mail size={13} strokeWidth={1.75} aria-hidden="true" />
                 <span>Inquire</span>
@@ -698,8 +742,8 @@ export default function ChatBot() {
                 type="button"
                 className="chatbot__iconBtn"
                 onClick={handleReset}
-                aria-label="Reset conversation"
-                title="New chat"
+                aria-label="Start a new chat"
+                title="Start a new chat"
               >
                 <RotateCcw size={13} strokeWidth={1.75} aria-hidden="true" />
               </button>
@@ -718,6 +762,7 @@ export default function ChatBot() {
             className={`chatbot__messages${messages.length > 1 ? ' chatbot__messages--conversation' : ''}`}
             ref={listRef}
             aria-live="polite"
+            hidden={inquiryOpen}
           >
             {messages.map((msg) => {
               const isRevealing = msg.id === revealingId
@@ -731,8 +776,8 @@ export default function ChatBot() {
                   data-msg-id={msg.id}
                   className={`chatbot__msg chatbot__msg--${msg.role}`}
                 >
-                  <span className="chatbot__msgRole">
-                    {msg.role === 'user' ? 'You' : 'Earthfoam'}
+                  <span className="visually-hidden">
+                    {msg.role === 'user' ? 'You said:' : 'Earthfoam said:'}
                   </span>
                   <div
                     className={`chatbot__bubble${isRevealing ? ' chatbot__bubble--revealing' : ''}`}
@@ -777,7 +822,7 @@ export default function ChatBot() {
             {loading && (
               <div className="chatbot__typing">
                 <LoaderCircle size={15} strokeWidth={1.75} className="chatbot__spin" aria-hidden="true" />
-                <span>Checking Earthfoam records…</span>
+                <span>Thinking…</span>
               </div>
             )}
 
@@ -795,7 +840,7 @@ export default function ChatBot() {
             />
           )}
 
-          <div className="chatbot__composer">
+          <div className="chatbot__composer" hidden={inquiryOpen}>
             <form className="chatbot__form" onSubmit={handleFormSubmit}>
               <label htmlFor="earthfoam-chatbot-input" className="visually-hidden">
                 Ask a question or enter an order number
@@ -805,7 +850,8 @@ export default function ChatBot() {
                 id="earthfoam-chatbot-input"
                 type="text"
                 className="chatbot__input"
-                placeholder={`Ask about foam, mattresses, or order e.g. ${ORDER_NUMBER_EXAMPLE}`}
+                placeholder="Ask a question or enter an order number"
+                autoComplete="off"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={loading}
@@ -820,7 +866,7 @@ export default function ChatBot() {
               </button>
             </form>
             <p className="chatbot__disclaimer">
-              Order lookups are live · Retail mattresses link to earthfoam.lk
+              Answers are written by AI and can be wrong. Check anything important with us.
             </p>
           </div>
         </section>
