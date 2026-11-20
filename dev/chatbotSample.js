@@ -89,10 +89,10 @@ function sendJson(res, statusCode, body) {
 
 function sanitizeAssistantText(text, userText = '') {
   let out = `${text || ''}`
-  if (!/[\u3040-\u30ff\u3400-\u9fff]/.test(userText)) {
+  if (!/[\u3000-\u30ff\u3400-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]/.test(userText)) {
     out = out
-      .replace(/(\d)\s*[\u3040-\u30ff\u3400-\u9fff]+/g, '$1"')
-      .replace(/[\u3040-\u30ff\u3400-\u9fff]+/g, '')
+      .replace(/(\d)\s*[\u3000-\u30ff\u3400-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]+/g, '$1"')
+      .replace(/[\u3000-\u30ff\u3400-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]+/g, '')
   }
   return out.trim()
 }
