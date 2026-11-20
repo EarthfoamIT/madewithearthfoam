@@ -244,40 +244,52 @@ function send(res, statusCode, body) {
   res.end(JSON.stringify(body))
 }
 
-export default function orderTrackingSample(databaseUrl) {
+export function createOrderLookup(databaseUrl) {
   let pool
+
+  return async function lookupOrder(rawOrderNumber) {
+    if (!databaseUrl) {
+      return { status: 500, body: { message: 'ORDER_TRACKING_SAMPLE_DB is not set in .env.local.' } }
+    }
+
+    const orderNumber = `${rawOrderNumber || ''}`.trim().toUpperCase().replace(/\s+/g, '')
+
+    if (!ORDER_NUMBER_PATTERN.test(orderNumber)) {
+      return { status: 400, body: { statusCode: 400, message: 'Please enter a valid order number.' } }
+    }
+
+    pool ??= mysql.createPool({ uri: databaseUrl, connectionLimit: 2, dateStrings: true })
+    const [rows] = await pool.query(TRACKING_SQL, [COMPANY_ID, orderNumber])
+
+    if (!rows.length) {
+      return { status: 404, body: { statusCode: 404, message: 'We could not find an order with that number.' } }
+    }
+
+    const shipments = rows.map(toShipment)
+    const withContainer = shipments.filter((shipment) => shipment.containerNumber)
+
+    return {
+      status: 200,
+      body: {
+        orderNumber: rows[0].ordernum,
+        shipments: withContainer.length ? withContainer : shipments.slice(0, 1),
+      },
+    }
+  }
+}
+
+export default function orderTrackingSample(databaseUrl) {
+  const lookupOrder = createOrderLookup(databaseUrl)
 
   return {
     name: 'order-tracking-sample',
     apply: 'serve',
     configureServer(server) {
       server.middlewares.use('/sample-api/ordertracking', async (req, res) => {
-        if (!databaseUrl) {
-          return send(res, 500, { message: 'ORDER_TRACKING_SAMPLE_DB is not set in .env.local.' })
-        }
-
         const url = new URL(req.url, 'http://localhost')
-        const orderNumber = `${url.searchParams.get('ordernum') || ''}`.trim().toUpperCase().replace(/\s+/g, '')
-
-        if (!ORDER_NUMBER_PATTERN.test(orderNumber)) {
-          return send(res, 400, { statusCode: 400, message: 'Please enter a valid order number.' })
-        }
-
         try {
-          pool ??= mysql.createPool({ uri: databaseUrl, connectionLimit: 2, dateStrings: true })
-          const [rows] = await pool.query(TRACKING_SQL, [COMPANY_ID, orderNumber])
-
-          if (!rows.length) {
-            return send(res, 404, { statusCode: 404, message: 'We could not find an order with that number.' })
-          }
-
-          const shipments = rows.map(toShipment)
-          const withContainer = shipments.filter((shipment) => shipment.containerNumber)
-
-          send(res, 200, {
-            orderNumber: rows[0].ordernum,
-            shipments: withContainer.length ? withContainer : shipments.slice(0, 1),
-          })
+          const result = await lookupOrder(url.searchParams.get('ordernum'))
+          send(res, result.status, result.body)
         } catch (err) {
           server.config.logger.error(`[order-tracking-sample] ${err.message}`)
           send(res, 500, {

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet, ScrollRestoration, useLocation } from 'react-router'
 import Carousel from '../components/Carousel.jsx'
+import ChatBot from '../components/ChatBot.jsx'
 import Footer from '../components/Footer.jsx'
 import Header from '../components/Header.jsx'
 import Newsletter from '../components/Newsletter.jsx'
@@ -24,6 +25,7 @@ export default function RootLayout() {
       <Carousel />
       <Newsletter />
       <Footer />
+      <ChatBot />
       <ScrollRestoration />
     </div>
   )
