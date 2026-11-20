@@ -45,7 +45,7 @@ function prefersReducedMotion() {
 
 function nextRevealIndex(content, current) {
   let next = Math.min(content.length, current + REVEAL_STEP_CHARS)
-  const linkRegex = /\[[^\]]+\]\([^)]+\)/g
+  const linkRegex = /(\*\*\[[^\]]+\]\s*\((?:[^()\s]|\([^()\s]*\))+\)\*\*|\[[^\]]+\]\s*\((?:[^()\s]|\([^()\s]*\))+\))/g
   for (const match of content.matchAll(linkRegex)) {
     const start = match.index
     const end = start + match[0].length
@@ -76,8 +76,8 @@ function isSafeHref(href) {
 
 function stripStrayCjkTokens(text) {
   return `${text || ''}`
-    .replace(/(\d)\s*[\u3040-\u30ff\u3400-\u9fff]+/g, '$1"')
-    .replace(/[\u3040-\u30ff\u3400-\u9fff]+/g, '')
+    .replace(/(\d)\s*[\u3000-\u30ff\u3400-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]+/g, '$1"')
+    .replace(/[\u3000-\u30ff\u3400-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af]+/g, '')
 }
 
 function stripDanglingRevealTokens(text) {
@@ -87,16 +87,16 @@ function stripDanglingRevealTokens(text) {
 }
 
 function renderInlineTokens(text, onNavigateInternal) {
-  const tokenRegex = /(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`|https?:\/\/[^\s)]+)/g
+  const tokenRegex = /(\[[^\]]+\]\s*\((?:[^()\s]|\([^()\s]*\))+\)|\*\*[^*]+\*\*|\*[^*\n]+\*|`[^`]+`|https?:\/\/[^\s)]+)/g
   const parts = text.split(tokenRegex)
 
   return parts.map((part, idx) => {
     if (!part) return null
     if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-      return <strong key={idx}>{part.slice(2, -2)}</strong>
+      return <strong key={idx}>{renderInlineTokens(part.slice(2, -2), onNavigateInternal)}</strong>
     }
     if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
-      return <em key={idx}>{part.slice(1, -1)}</em>
+      return <em key={idx}>{renderInlineTokens(part.slice(1, -1), onNavigateInternal)}</em>
     }
     if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
       return (
@@ -122,10 +122,11 @@ function renderInlineTokens(text, onNavigateInternal) {
         </span>
       )
     }
-    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
+    const linkMatch = part.match(/^\[([^\]]+)\]\s*\(((?:[^()\s]|\([^()\s]*\))+)\)$/)
     if (linkMatch) {
       const [, label, href] = linkMatch
-      if (!isSafeHref(href)) return label
+      const cleanLabel = label.replace(/^\*\*|\*\*$/g, '').replace(/^\*|\*$/g, '')
+      if (!isSafeHref(href)) return cleanLabel
       if (href.startsWith('/') && !href.startsWith('/assets/')) {
         return (
           <Link
@@ -134,7 +135,7 @@ function renderInlineTokens(text, onNavigateInternal) {
             className="chatbot__inlineLink"
             onClick={onNavigateInternal}
           >
-            {label}
+            {cleanLabel}
           </Link>
         )
       }
@@ -146,7 +147,7 @@ function renderInlineTokens(text, onNavigateInternal) {
           rel="noopener noreferrer"
           className="chatbot__inlineLink"
         >
-          {label}
+          {cleanLabel}
         </a>
       )
     }
