@@ -1,10 +1,17 @@
 import { ArrowRight, CloudOff, LoaderCircle, SearchX } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import ShipmentCard from '../components/ShipmentCard.jsx'
 import { CONTACT } from '../data/site.js'
 import usePageMeta from '../hooks/usePageMeta.js'
-import { ORDER_NUMBER_EXAMPLE, STAGES, fetchOrderTracking } from '../lib/orderTracking.js'
+import {
+  ORDER_NUMBER_EXAMPLE,
+  ORDER_NUMBER_MAX_LENGTH,
+  STAGES,
+  fetchOrderTracking,
+  isValidOrderNumber,
+  normalizeOrderNumber,
+} from '../lib/orderTracking.js'
 import { STAGE_ICONS } from '../lib/stageIcons.js'
 import '../styles/track-order.css'
 
@@ -51,17 +58,30 @@ export default function TrackOrderPage() {
     path: '/track-order',
   })
 
-  const [searchParams, setSearchParams] = useSearchParams()
-  const orderNumber = (searchParams.get('order') || '').trim()
+  // The order number is kept in history state, not the URL. Every page runs the
+  // LinkedIn Insight tag, which reports the page URL, and order numbers act as
+  // the only key to an order's shipping details.
+  const location = useLocation()
+  const navigate = useNavigate()
+  const legacyOrder = new URLSearchParams(location.search).get('order')
+  const orderNumber = normalizeOrderNumber(location.state?.order || legacyOrder)
   const [input, setInput] = useState(orderNumber)
+  const [inputError, setInputError] = useState('')
   const [result, setResult] = useState({ status: 'idle' })
   const [attempt, setAttempt] = useState(0)
 
-  // Keep the field in sync when the order in the URL changes (back/forward).
+  // Older links may still carry ?order=. Move it into history state and drop
+  // it from the address bar.
+  useEffect(() => {
+    if (legacyOrder !== null) navigate('/track-order', { replace: true, state: { order: normalizeOrderNumber(legacyOrder) } })
+  }, [legacyOrder, navigate])
+
+  // Keep the field in sync when the order in history changes (back/forward).
   const [lastOrderNumber, setLastOrderNumber] = useState(orderNumber)
   if (orderNumber !== lastOrderNumber) {
     setLastOrderNumber(orderNumber)
     setInput(orderNumber)
+    setInputError('')
   }
 
   useEffect(() => {
@@ -81,10 +101,15 @@ export default function TrackOrderPage() {
 
   function handleSubmit(e) {
     e.preventDefault()
-    const value = input.trim().toUpperCase()
+    const value = normalizeOrderNumber(input)
     if (!value) return
+    if (!isValidOrderNumber(value)) {
+      setInputError(`That doesn’t look like an order number. It should look like ${ORDER_NUMBER_EXAMPLE}.`)
+      return
+    }
+    setInputError('')
     if (value === orderNumber) setAttempt((n) => n + 1)
-    else setSearchParams({ order: value })
+    else navigate('/track-order', { state: { order: value } })
   }
 
   const status = orderNumber ? result.status : 'idle'
@@ -113,15 +138,23 @@ export default function TrackOrderPage() {
               autoCapitalize="characters"
               spellCheck="false"
               required
+              maxLength={ORDER_NUMBER_MAX_LENGTH}
+              aria-invalid={inputError ? 'true' : undefined}
+              aria-describedby="order-number-help"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value)
+                setInputError('')
+              }}
             />
             <button className="button trackOrder__submit" disabled={status === 'loading'}>
               Track
               <ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" />
             </button>
           </form>
-          <p className="text-14 trackOrder__muted mt-1 pl-3" data-animate="slide-up" data-delay="3">You’ll find it on your order confirmation or invoice.</p>
+          <p id="order-number-help" className="text-14 trackOrder__muted mt-1 pl-3" data-animate="slide-up" data-delay="3" aria-live="polite">
+            {inputError || 'You’ll find it on your order confirmation or invoice.'}
+          </p>
         </div>
 
         <div className="lg:col-start-5 lg:col-span-4 mt-5 lg:mt-0" aria-live="polite" aria-busy={status === 'loading'}>

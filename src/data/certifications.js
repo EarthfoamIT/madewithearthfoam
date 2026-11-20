@@ -1,13 +1,30 @@
-// Certificate PDFs live in public/assets/ under their original file names,
-// so these URLs match the ones on the original site.
-export const certifications = [
-  { label: 'GOTS Certification', file: 'GOTS New.pdf' },
-  { label: 'GOLS Certification', file: '2026-PVL-Cert-GOLS.pdf' },
-  { label: 'Eco-Institut Certification', file: 'Eco Certificate.pdf' },
-  { label: 'FSC Certification', file: 'FSC Certificate.pdf' },
-  { label: 'Fair For Life', file: 'FFL Certificate.pdf' },
-  { label: 'Oeko Tex', file: '2026-PVL-Cert-OekoTex.pdf' },
-  { label: 'Organic Content Standard', file: 'OCS_Scope_Certificate_2025-04-02 08_49_57 UTC.pdf' },
-  { label: 'ISO 9001', file: 'ISO 90012015 Certificate.pdf' },
-  { label: 'ISO 14001', file: 'Earthfoam (Private) Limited -14k 2025.pdf' },
-].map((cert) => ({ ...cert, href: `/assets/${encodeURIComponent(cert.file)}` }))
+import fairForLifeLogo from '../assets/graphics/fair-for-life.webp'
+import { certificationGroupList } from './certificationList.js'
+
+// Certificates shown as logo tiles in the home page's
+// "Standards & Certifications" section, grouped by heading.
+//
+// - Names and PDF links live in certificationList.js.
+// - Logos live in src/assets/graphics/certifications/, named after the `id`
+//   (e.g. gols.svg, gots.png, oeko-tex.webp). Until a logo file is added,
+//   the tile shows the label instead.
+
+const logoFiles = import.meta.glob('../assets/graphics/certifications/*.{svg,png,webp,jpg}', {
+  eager: true,
+  import: 'default',
+})
+const logoFor = (id) =>
+  Object.entries(logoFiles).find(([path]) => path.split('/').pop().replace(/\.\w+$/, '') === id)?.[1]
+
+// Logos that don't follow the id-based file naming above.
+const logoOverrides = { 'fair-for-life': fairForLifeLogo }
+
+export const certificationGroups = certificationGroupList.map((group) => ({
+  ...group,
+  certifications: group.certifications.map((cert) => ({
+    ...cert,
+    logo: logoOverrides[cert.id] ?? logoFor(cert.id),
+  })),
+}))
+
+export const certifications = certificationGroups.flatMap((group) => group.certifications)

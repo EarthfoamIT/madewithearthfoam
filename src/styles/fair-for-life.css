@@ -1,0 +1,145 @@
+/* Fair for Life page (/fair-for-life). Site palette from global.css:
+   gray1 #202122, gray2 #313131, gray7 #9C9A9B, gray8 #BAB8B8, sunset #E68276. */
+
+.fflPage__seal {
+  width: 56px;
+  height: auto; }
+  @media (min-width: 1024px) {
+    .fflPage__seal {
+      width: 72px; } }
+
+.fflPage__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  max-width: 560px;
+  text-wrap: pretty; }
+  @media (min-width: 1024px) {
+    .fflPage__intro {
+      /* Lines the first line up with the title, below the seal. */
+      padding-top: 104px; } }
+
+.fflPage__cert {
+  transition: border-color 0.3s, background-color 0.3s; }
+  .fflPage__cert:hover {
+    border-color: #E68276;
+    background: #E68276; }
+
+/* Numbers */
+.fflStats {
+  display: grid;
+  gap: 30px;
+  padding-top: 30px;
+  border-top: 1px solid #202122; }
+  @media (min-width: 768px) {
+    .fflStats {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px; } }
+  .fflStats p:last-child {
+    max-width: 260px; }
+
+.fflStats__value {
+  font-family: "GT America", sans-serif;
+  font-size: clamp(48px, 30px + 4vw, 96px);
+  line-height: 95%;
+  letter-spacing: -0.04em;
+  color: #E68276;
+  margin-bottom: 10px; }
+
+/* Sections */
+.fflSection {
+  margin-top: 80px;
+  padding-top: 30px;
+  border-top: 1px solid #202122; }
+  @media (min-width: 1024px) {
+    .fflSection {
+      margin-top: 120px; } }
+
+.fflSection__lede {
+  max-width: 720px; }
+
+/* Steps */
+.fflSteps {
+  display: grid;
+  gap: 10px; }
+  @media (min-width: 768px) {
+    .fflSteps {
+      grid-template-columns: repeat(3, 1fr); } }
+  .fflSteps li {
+    position: relative;
+    padding: 24px;
+    border-radius: 16px;
+    background: #202122; }
+
+.fflSteps__num {
+  position: absolute;
+  top: 24px;
+  right: 24px; }
+
+.fflSteps__icon {
+  color: #E68276;
+  margin-bottom: 40px; }
+
+/* Projects */
+.fflProject {
+  display: grid;
+  gap: 30px;
+  padding: 40px 0;
+  border-top: 1px solid #202122; }
+  @media (min-width: 1024px) {
+    .fflProject {
+      grid-template-columns: 3fr 5fr;
+      gap: 60px;
+      padding: 60px 0; } }
+
+@media (min-width: 1024px) {
+  .fflProject__head {
+    position: sticky;
+    top: 150px;
+    align-self: start; } }
+
+.fflProject__summary {
+  margin-top: 16px;
+  max-width: 440px;
+  text-wrap: pretty; }
+
+.fflProject__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  color: #BAB8B8;
+  text-decoration: underline;
+  transition: color 0.3s; }
+  .fflProject__more:hover {
+    color: #E68276; }
+
+.fflWork {
+  display: grid;
+  gap: 30px 10px; }
+  @media (min-width: 640px) {
+    .fflWork {
+      grid-template-columns: repeat(2, 1fr); } }
+
+.fflWork__item img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 16px;
+  background: #202122; }
+
+.fflWork__item p {
+  text-wrap: pretty; }
+
+/* Outro */
+.fflOutro {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; }
+  @media (min-width: 1024px) {
+    .fflOutro {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between; } }

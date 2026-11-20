@@ -9,17 +9,20 @@ The logic lives in the API module `api/src/ordertracking/` and in the page's wor
 The page calls one endpoint, which needs no login:
 
 ```
-GET https://api.hexagonasia.xyz/ordertracking?ordernum=BIA/CA/014/26
+GET https://api.earthfoam.lk/ordertracking?ordernum=BIA/CA/014/26
 ```
 
 - `ordernum` is trimmed, upper-cased and stripped of whitespace. It must match `^[A-Z0-9][A-Z0-9/-]{2,49}$`, or the API returns **400**.
 - No rows found returns **404**. Database errors return **500**.
+- **Rate limit** (`api/src/ordertracking/ordertracking.rate-limit.ts`): per client IP, at most 30 lookups and 10 not-found results in 10 minutes, then **429** with `Retry-After`. Order numbers follow a guessable pattern, so this is what stops someone walking through them. Counters are in memory per pm2 worker. Behind the load balancer the client IP is the last `X-Forwarded-For` entry.
+- Responses are sent with `Cache-Control: no-store`.
+- The page keeps the order number in browser history state, not in the URL, because the LinkedIn Insight tag on every page reports the page URL. Old `/track-order?order=…` links still work and are rewritten to plain `/track-order`.
 
 The API runs one parameterised query. It is read-only, and the company is fixed to **3**:
 
 ```sql
 SELECT
-  b.ordernum, b.containerno, b.vesselname, b.arrivalport, b.finaldes,
+  b.ordernum, b.containerno, b.vesselname, b.arrivalport,
   DATE_FORMAT(b.loaddate,    '%Y-%m-%d') loaddate,
   DATE_FORMAT(b.estloaddate, '%Y-%m-%d') estloaddate,
   DATE_FORMAT(b.etd,         '%Y-%m-%d') etd,
@@ -69,7 +72,6 @@ How this differs from the Vessel Tracking Dashboard query (`LoadingdetService.ge
 | `arrivaldt` | `arrivalDate` | Only when the snapshot has no `arrival_date` |
 | `curloc` | `currentLocation` | Only when the snapshot has no `current_location` |
 | `arrivalport` | `destination` (fallback) | Split at the last dash, for example `LOS ANGELES - USA` → port *Los Angeles*, country *USA* |
-| `finaldes` | `finalDestination` | Returned in the API response, **not shown** on the page today |
 | `istracking`, `trackingstate` | (not returned) | Decide whether the map is sent (§7, Map) |
 
 ### `vessel_tracking_snapshot` (ShipsGo data kept in sync by the ERP)
@@ -190,7 +192,6 @@ Rule 2 treats a past `loaddate` with no other shipping data as a **plan, not a f
     "arrivalDate": null,                   // snapshot.arrival_date ?? arrivaldt
     "origin":      { "name": "COLOMBO",     "country": "Sri Lanka" },          // first route port ?? port_of_loading ?? Colombo
     "destination": { "name": "LOS ANGELES", "country": "United States (USA)" }, // last route port ?? port_of_discharge ?? arrivalport
-    "finalDestination": "USA",             // loadingdet.finaldes (not shown)
     "currentLocation": "SHEKOU (SHENZHEN)",// snapshot.current_location ?? curloc
     "progress": 71,                        // §4 Progress
     "route":  [{ "name": "COLOMBO", "country": "Sri Lanka", "status": "PAST" }],  // route_ports_json
@@ -301,7 +302,8 @@ The API sends `map` only when **`loadingdet.istracking = 'Y'`** and **`loadingde
 | (before searching) | The five stages, with one line explaining each |
 | (waiting) | **Finding your order…** |
 | 404 | **We couldn't find that order.** Check the number and try again. It should look like ABC/012/26. Still stuck? Email foamfactory@earthfoam.com and we'll look it up for you. |
-| 400 | **Tracking is unavailable right now.** Please enter a valid order number. |
+| 400 (or rejected by the page before sending) | **Tracking is unavailable right now.** Please enter a valid order number. Input that doesn't match the pattern is caught on the page, under the field, without a request. |
+| 429 | **Tracking is unavailable right now.** You've looked up a lot of orders in a short time. Please wait a few minutes and try again. |
 | 500 | **Tracking is unavailable right now.** Something went wrong on our side. Please try again shortly. |
 | No response (network) | **Tracking is unavailable right now.** We couldn't reach our tracking service. Please try again in a moment. |
 

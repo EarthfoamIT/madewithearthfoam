@@ -9,7 +9,7 @@ import halfHeightPillow01 from '../assets/images/half-height-pillow-01.webp'
 import halfHeightPillow02 from '../assets/images/half-height-pillow-02.webp'
 
 // Each project gets its own page at /<slug>.
-// `card` is the teaser shown in the home page's "Fair Trade Projects" section.
+// `card` is the teaser shown in the home page's "Organic & Fair Trade Program" section.
 export const projects = [
   {
     slug: 'increasing-access-to-healthcare',

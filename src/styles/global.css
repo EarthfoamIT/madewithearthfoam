@@ -30,6 +30,11 @@ ol, ul {
 *, *:before, *:after {
   box-sizing: border-box; }
 
+/* No blue flash on tap in mobile browsers; buttons and links keep their own
+   :active / :focus-visible styles. */
+html {
+  -webkit-tap-highlight-color: transparent; }
+
 a {
   color: inherit;
   text-decoration: none;
@@ -343,21 +348,26 @@ main .header .header__sinhala {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
       column-gap: 10px; } }
+/* Right-hand group: Track Order and Media Gallery. It takes
+   three columns (four on narrow desktops) so the buttons never squeeze,
+   and the tagline sits in the two columns before it. */
 .header__actions {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 8px; }
+  gap: 8px;
+  margin-left: auto; }
   @media (min-width: 1024px) {
     .header__actions {
-      grid-column: 7 / span 2; } }
-  /* Narrow desktops: two columns are too tight for both buttons, so they
-     take three and the tagline shifts left to make room. */
-  @media (min-width: 1024px) and (max-width: 1279px) {
-    .header__actions {
-      grid-column: 6 / span 3; }
+      grid-column: 6 / span 3;
+      gap: 12px; }
     .header__content .header__sinhala {
       grid-column: 4 / span 2; } }
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .header__actions {
+      grid-column: 5 / span 4; }
+    .header__content .header__sinhala {
+      grid-column: 3 / span 2; } }
 
 .delayedHeader > .header {
   transition: transform 0.4s ease-in-out;
@@ -366,15 +376,66 @@ main .header .header__sinhala {
 .stickyHeader > .header {
   position: sticky; }
 
+.header__content {
+  padding-top: 12px;
+  padding-bottom: 12px; }
+  @media (min-width: 1024px) {
+    .header__content {
+      padding-top: 16px;
+      padding-bottom: 16px; } }
+
+/* Made with Earthfoam seal. Bigger over the hero, where there's room. */
 .header__logo {
-  width: 30px;
-  height: auto; }
+  display: block;
+  width: auto;
+  height: 56px; }
   @media (min-width: 1024px) {
     .header__logo {
-      width: 36px; } }
+      height: 76px; } }
+
+main .header .header__content {
+  padding-top: 20px;
+  padding-bottom: 20px; }
+  @media (min-width: 1024px) {
+    main .header .header__content {
+      padding-top: 30px;
+      padding-bottom: 30px; } }
+
+/* Over the hero the two seals stack in the top-right corner, Fair for Life
+   above the badge, at one width; height follows each file's own aspect
+   ratio, so neither is stretched. */
+main .header .header__actions {
+  margin-left: auto;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 12px; }
+
+/* No 1440px cap here, so on wide screens the seals stay in the hero's
+   right corner instead of drifting inward with the centred content box. */
+main .header .header__content {
+  max-width: none;
+  align-items: flex-start; }
+
+main .header .header__logo,
+main .header .fairForLifeIcon img {
+  width: 64px;
+  height: auto; }
+  @media (min-width: 1024px) {
+    main .header .header__logo,
+    main .header .fairForLifeIcon img {
+      width: 88px; }
+    /* 88px wide gives 104.5px tall; round to a whole pixel so the edges stay
+       crisp while it moves. */
+    main .header .fairForLifeIcon img {
+      height: 105px; } }
 .hero {
   width: 100%;
+  /* svh = viewport with the mobile browser bars showing, so the bottom-left
+     quick links are on screen at load. vh stays as the fallback for older
+     browsers (on mobile it measures with the bars hidden). */
   height: 100vh;
+  height: 100svh;
   max-width: 1920px;
   max-height: 1080px;
   min-height: 450px; }
@@ -382,15 +443,51 @@ main .header .header__sinhala {
 .hero .header {
   z-index: 50; }
 
+/* NOTE: always write -webkit-backdrop-filter BEFORE backdrop-filter, in every
+   file. With the unprefixed one first, the production CSS minifier drops it
+   and only Safari gets the blur (Chrome, Edge and Firefox show none). The dev
+   server doesn't minify, so this only shows up on the deployed site. */
+
+/* Frosted pill over the hero video. The tint does most of the work, so the
+   pill stays readable even when the browser skips the blur (Chrome often
+   doesn't blur a GPU-decoded <video> behind it). translateZ gives the pill
+   its own layer, which helps the blur apply over the video. */
 .hero__notification {
   padding: 10px 15px;
   color: #FFFFFF;
-  background: rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(50px);
-  -webkit-backdrop-filter: blur(50px);
-  transition: background 0.3s; }
+  background: rgba(20, 22, 23, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  transform: translateZ(0);
+  transition: background-color 0.3s, border-color 0.3s; }
   .hero__notification:hover {
-    background: black; }
+    background: #E68276;
+    border-color: #E68276; }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .hero__notification {
+      background: rgba(20, 22, 23, 0.8); } }
+
+/* Fair for Life seal in the hero's top-right corner: just the logo. The
+   file has its own rounded corners, so no border-radius here, and
+   drop-shadow (not box-shadow) follows that shape. */
+/* Only transform animates: the shadow stays put (animating a filter over the
+   playing hero video repaints every frame and stutters), and translate3d +
+   will-change keep the logo on its own GPU layer so it moves smoothly. */
+.fairForLifeIcon {
+  display: block; }
+  .fairForLifeIcon img {
+    display: block;
+    filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.35));
+    transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1);
+    will-change: transform; }
+  .fairForLifeIcon:hover img, .fairForLifeIcon:focus-visible img {
+    transform: translate3d(0, -2px, 0); }
+  @media (prefers-reduced-motion: reduce) {
+    .fairForLifeIcon img {
+      transition: none; }
+    .fairForLifeIcon:hover img, .fairForLifeIcon:focus-visible img {
+      transform: none; } }
 
 .hero__background {
   border-bottom-left-radius: 16px;
@@ -424,10 +521,10 @@ main .header .header__sinhala {
     color: #E84848; }
 
 .indexSection {
-  scroll-margin-top: 72px; }
+  scroll-margin-top: 90px; }
   @media (min-width: 1024px) {
     .indexSection {
-      scroll-margin-top: 116px; } }
+      scroll-margin-top: 120px; } }
 .indexSection__toggle {
   color: #FFFFFF;
   background-color: #202122;
@@ -468,11 +565,19 @@ main .header .header__sinhala {
 .contentLayout__body, .contentLayout__gallery {
   max-width: 500px; }
 
+/* A YouTube film in the body runs the full width of the column (lined up
+   with the subhead above it); the text beside it keeps the 500px measure. */
+@media (min-width: 1024px) {
+  .contentLayout__body:has(> .ytEmbed) {
+    max-width: none; }
+    .contentLayout__body:has(> .ytEmbed) > :not(.ytEmbed) {
+      max-width: 500px; } }
+
 .contentLayout__gallery figure figcaption {
   background-color: rgba(32, 33, 34, 0.2);
   padding: 5px 15px;
-  backdrop-filter: blur(50px);
-  -webkit-backdrop-filter: blur(50px); }
+  -webkit-backdrop-filter: blur(50px);
+  backdrop-filter: blur(50px); }
 
 .contentLayout__gallery > *:first-child {
   margin-top: 0 !important; }
@@ -2338,3 +2443,109 @@ main .header .header__sinhala {
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; } }
+
+/* --- YouTube embed (YouTubeEmbed.jsx): 16:9, click to load --- */
+.ytEmbed__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000000; }
+  .ytEmbed__frame iframe, .ytEmbed__poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0; }
+
+.ytEmbed__poster {
+  cursor: pointer; }
+  .ytEmbed__poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.215, 0.61, 0.355, 1), opacity 0.3s;
+    opacity: 0.9; }
+  .ytEmbed__poster:hover img {
+    transform: scale(1.03);
+    opacity: 1; }
+
+.ytEmbed__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  padding-left: 3px;
+  border-radius: 50%;
+  color: #FFFFFF;
+  background: rgba(20, 22, 23, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  transition: background-color 0.3s, border-color 0.3s, transform 0.3s; }
+  @media (min-width: 1024px) {
+    .ytEmbed__play {
+      width: 80px;
+      height: 80px;
+      margin: -40px 0 0 -40px; } }
+
+.ytEmbed__poster:hover .ytEmbed__play, .ytEmbed__poster:focus-visible .ytEmbed__play {
+  background: #E68276;
+  border-color: #E68276;
+  transform: scale(1.06); }
+
+/* Standards & Certifications: logos under each group's paragraph, linking
+   to the certificate PDFs. Each logo keeps its own shape; only the height is
+   shared. Selectors are prefixed with .certLogos so they win over .richtext. */
+.certLogos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px; }
+  @media (min-width: 1024px) {
+    .certLogos {
+      gap: 16px 24px; } }
+
+/* Tighter rhythm around the logo rows than the default richtext spacing. */
+.contentLayout__body .richtext p:has(+ .certLogos) {
+  margin-bottom: 16px; }
+.contentLayout__body .richtext .certLogos + h3 {
+  margin-top: 32px; }
+  @media (min-width: 1024px) {
+    .contentLayout__body .richtext p:has(+ .certLogos) {
+      margin-bottom: 20px; }
+    .contentLayout__body .richtext .certLogos + h3 {
+      margin-top: 56px; } }
+
+.certLogos .certLogos__link {
+  display: block;
+  text-decoration: none; }
+
+.certLogos .certLogos__img {
+  display: block;
+  height: 52px;
+  width: auto;
+  transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1), opacity 0.1s ease-out;
+  will-change: transform; }
+  @media (min-width: 1024px) {
+    .certLogos .certLogos__img {
+      height: 64px; } }
+
+.certLogos .certLogos__fallback {
+  display: block;
+  color: #9C9A9B; }
+
+.certLogos .certLogos__link:hover .certLogos__img, .certLogos .certLogos__link:focus-visible .certLogos__img {
+  opacity: 0.85;
+  transform: translate3d(0, -3px, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .certLogos .certLogos__img {
+    transition: opacity 0.18s ease-out; }
+  .certLogos .certLogos__link:hover .certLogos__img, .certLogos .certLogos__link:focus-visible .certLogos__img {
+    transform: none; } }

@@ -6,7 +6,7 @@ import './styles/global.css'
 
 console.groupCollapsed('Site Credits')
 console.log('Web Design by Michael Mitzman https://mitz.nyc')
-console.log('Web Development by Sensor Station https://www.sensorstation.co')
+console.log('Made with love by Earthfoam IT')
 console.groupEnd()
 
 createRoot(document.getElementById('root')).render(

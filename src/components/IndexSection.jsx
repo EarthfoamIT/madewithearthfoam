@@ -1,6 +1,4 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { certifications } from '../data/certifications.js'
-import CertificateLink from './CertificateLink.jsx'
 import GalleryImage from './GalleryImage.jsx'
 import GalleryVideo from './GalleryVideo.jsx'
 
@@ -12,8 +10,6 @@ function GalleryItem({ item }) {
       return <GalleryImage {...item} />
     case 'video':
       return <GalleryVideo src={item.src} caption={item.caption} />
-    case 'certificates':
-      return certifications.map((cert) => <CertificateLink key={cert.file} href={cert.href} label={cert.label} />)
     default:
       return null
   }

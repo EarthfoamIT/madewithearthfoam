@@ -1,4 +1,4 @@
-import { certifications } from '../src/data/certifications.js'
+import { certificationList as certifications } from '../src/data/certificationList.js'
 import { createOrderLookup } from './orderTrackingSample.js'
 
 const ORDER_NUMBER_MATCH = /\b[A-Z0-9]{2,12}(?:[/-][A-Z0-9]{1,12}){1,4}\b/i

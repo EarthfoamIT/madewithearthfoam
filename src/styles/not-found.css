@@ -1,0 +1,112 @@
+/* 404 page (catch-all route). Layout matches the Contact page; colours and
+   type come from global.css. Selectors that touch .button include it
+   because global.css loads after page styles. */
+
+/* Display-size "404" in the sunset accent. */
+.notFoundPage__code {
+  font-family: "GT America", sans-serif;
+  font-size: clamp(120px, 60px + 16vw, 260px);
+  line-height: 80%;
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  color: #E68276;
+  font-variant-numeric: tabular-nums; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap; }
+
+.notFoundPage__title {
+  text-wrap: balance; }
+
+.notFoundPage__body {
+  display: flex;
+  flex-direction: column;
+  gap: 40px; }
+  @media (min-width: 1024px) {
+    .notFoundPage__body {
+      gap: 56px;
+      /* Starts the text where the title starts, below the numeral. */
+      align-self: end; } }
+
+.notFoundPage__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; }
+
+.notFoundPage__lede {
+  max-width: 520px;
+  text-wrap: pretty; }
+
+.notFoundPage__path {
+  max-width: 520px;
+  overflow-wrap: anywhere; }
+  .notFoundPage__path code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em;
+    color: #FFFFFF;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: #202122; }
+
+.button.notFoundPage__button {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 380px;
+  padding-top: 17px;
+  padding-bottom: 17px;
+  font-size: 16px; }
+
+.button.notFoundPage__button--primary {
+  border-color: #FFFFFF;
+  background-color: #FFFFFF;
+  color: #141617; }
+  .button.notFoundPage__button--primary:hover {
+    border-color: #E68276;
+    background-color: #E68276;
+    color: #FFFFFF; }
+
+.notFoundPage__links {
+  list-style: none;
+  border-top: 1px solid #202122; }
+
+.notFoundPage__link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 4px;
+  border-bottom: 1px solid #202122;
+  transition: color 0.3s, padding 0.3s; }
+  .notFoundPage__link:hover,
+  .notFoundPage__link:focus-visible {
+    color: #E68276;
+    padding-left: 10px; }
+  .notFoundPage__link:hover .color-gray7,
+  .notFoundPage__link:focus-visible .color-gray7 {
+    color: #BAB8B8; }
+
+.notFoundPage__icon {
+  flex-shrink: 0;
+  color: #9C9A9B;
+  transition: color 0.3s; }
+  .notFoundPage__link:hover .notFoundPage__icon,
+  .notFoundPage__link:focus-visible .notFoundPage__icon {
+    color: #E68276; }
+
+.notFoundPage__label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .notFoundPage__link {
+    transition: color 0.3s; }
+    .notFoundPage__link:hover,
+    .notFoundPage__link:focus-visible {
+      padding-left: 4px; } }

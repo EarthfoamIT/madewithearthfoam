@@ -33,7 +33,6 @@ const TRACKING_SQL = `
     b.containerno,
     b.vesselname,
     b.arrivalport,
-    b.finaldes,
     b.istracking,
     b.trackingstate,
     DATE_FORMAT(b.loaddate, '%Y-%m-%d') loaddate,
@@ -218,7 +217,6 @@ function toShipment(row) {
       name: destination?.name || row.portOfDischarge || arrivalPortName || null,
       country: destination?.countryName || arrivalPortCountry || null,
     },
-    finalDestination: row.finaldes || null,
     currentLocation: row.curloc || null,
     progress: getProgress(stage, row.transitPercentage, departureDate || loadDate, eta, today),
     route: (Array.isArray(routePorts) ? routePorts : []).map((port) => ({

@@ -32,7 +32,16 @@ export default function Footer() {
             <a className="underline" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
           </p>
           <p className="mt-3">
+            <Link className="underline" to="/contact">Contact us →</Link>
+          </p>
+          <p>
             <Link className="underline" to="/track-order">Track your order →</Link>
+          </p>
+          <p>
+            <Link className="underline" to="/gallery">Media Gallery →</Link>
+          </p>
+          <p>
+            <Link className="underline" to="/fair-for-life">Fair for Life →</Link>
           </p>
         </div>
 
